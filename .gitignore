@@ -1,0 +1,18 @@
+# Ham ders materyalleri (büyük PDF/PPTX/ZIP) repoya girmez
+canvas_materyalleri/
+
+# Kişisel ilerleme verisi
+.progress/
+
+# Streamlit gizli ayarları
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Yerel araç ayarları
+.claude/
