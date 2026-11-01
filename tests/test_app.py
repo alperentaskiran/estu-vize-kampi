@@ -61,22 +61,33 @@ def test_open_in_editor_switches_to_lab():
     btn.click().run()
     assert not at.exception, at.exception
     assert at.session_state["nav"] == PAGE_LAB
-    assert at.session_state["lab_lang"] == "c"
-    assert "int main" in at.text_area[0].value  # editör gerçekten dolu
+    assert "int main" in at.code[0].value  # editörde dersin kodu gösteriliyor
 
 
-def test_lab_editor_filled_when_entering_from_other_page():
+def test_code_page_is_read_only_and_browsable():
     at = _app()
     at.button_group[0].set_value(PAGE_LAB).run()
     assert not at.exception, at.exception
-    assert "int main" in at.text_area[0].value
-    at.button_group(key="lab_lang").set_value("csharp").run()
-    assert "class Program" in at.text_area[0].value  # dil değişince C# başlangıç şablonu
+    assert not at.text_area  # kod çalıştırma / düzenleme alanı yok
+    assert not any("Derle" in b.label for b in at.button)
+    assert "int main" in at.code[0].value
+
+    at.button_group(key="lab_filter").set_value("cs").run()
+    assert at.session_state["lab_template"].startswith("cs_") and "class Program" in at.code[0].value
+    first = at.session_state["lab_template"]
+    next(b for b in at.button if b.label == "Sonraki ➡️").click().run()
+    assert at.session_state["lab_template"] != first
+    next(b for b in at.button if b.label == "⬅️ Önceki").click().run()
+    assert at.session_state["lab_template"] == first
+
     at.selectbox(key="lab_pick").set_value("cs_kafe").run()
-    assert at.session_state["lab_lang"] == "csharp" and "decimal" in at.text_area[0].value
+    assert "decimal" in at.code[0].value
     at.button_group[0].set_value(PAGE_COCKPIT).run()
     at.button_group[0].set_value(PAGE_LAB).run()
-    assert "decimal" in at.text_area[0].value  # sekme değişince kod korunur
+    assert "decimal" in at.code[0].value  # sekme değişince seçili kod korunur
+
+    next(b for b in at.button if b.label == "📚 Konu özetine git").click().run()
+    assert at.session_state["nav"] == PAGE_NOTES and at.session_state["notes_course"] == "cs"
 
 
 def _start_exam(at):

@@ -13,7 +13,7 @@ sys.path.insert(0, ROOT)
 
 from data.code_templates import TEMPLATES  # noqa: E402
 from data.curriculum import COURSES, QUESTIONS, TEMPLATES_BY_ID, WEEK_BY_ID  # noqa: E402
-from modules.code_sandbox import run_code  # noqa: E402
+from tests.code_runner import run_code  # noqa: E402
 
 errors = []
 

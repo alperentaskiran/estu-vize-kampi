@@ -1,4 +1,4 @@
-"""Koyu tema CSS'i ve küçük HTML bileşenleri (kart, kutu, terminal)."""
+"""Koyu tema CSS'i ve küçük HTML bileşenleri (kart, kutu, kavram, ezber kartı, kod editörü)."""
 
 from __future__ import annotations
 
@@ -56,19 +56,18 @@ header[data-testid="stHeader"] { background: transparent; }
 .flash.back { background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(24,33,63,.9)); }
 .flash small { color: var(--muted); font-weight: 500; font-size: .78rem; margin-bottom: 10px; letter-spacing: .08em; }
 
-.term { background: #05070f; border: 1px solid #1f2a4d; border-radius: 14px; overflow: hidden; }
-.term .head { display:flex; gap:8px; align-items:center; padding: 8px 12px; background: #0d1326; border-bottom: 1px solid #1f2a4d;
-              font-size: .78rem; color: var(--muted); flex-wrap: wrap; }
-.term .dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; }
-.term pre { margin: 0; padding: 12px 14px; color: #d1fae5; font-size: .86rem; white-space: pre-wrap; word-break: break-word;
-            max-height: 420px; overflow: auto; background: transparent; }
-.term pre.err { color: #fecaca; } .term pre.comp { color: #fde68a; }
-.codeview { background: #05070f; border: 1px solid #1f2a4d; border-radius: 12px; padding: 8px 0; font-family: 'JetBrains Mono', monospace;
-            font-size: .82rem; overflow-x: auto; max-height: 360px; overflow-y: auto; }
-.codeview .ln { display:block; padding: 0 12px; white-space: pre; color: #cbd5e1; }
-.codeview .ln i { display:inline-block; width: 2.6em; color: #475569; font-style: normal; user-select: none; }
-.codeview .ln.error { background: rgba(248,113,113,.18); border-left: 3px solid var(--bad); }
-.codeview .ln.warning { background: rgba(251,191,36,.12); border-left: 3px solid var(--warn); }
+
+.ed-tab { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top: 10px; padding: 9px 14px;
+          background: #0d1326; border: 1px solid #1f2a4d; border-bottom: none; border-radius: 14px 14px 0 0; font-size: .85rem; }
+.ed-dots span { display:inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; }
+.ed-file { font-family: 'JetBrains Mono', monospace; color: #e6e9f5; background: #05070f; padding: 3px 10px; border-radius: 8px 8px 0 0;
+           border-bottom: 2px solid var(--accent); }
+.ed-title { color: var(--muted); flex: 1; min-width: 160px; } .ed-lang { color: #a5b4fc; font-weight: 600; }
+.st-key-code_editor { margin-top: -1rem; }
+.st-key-code_editor pre { border-radius: 0 0 14px 14px !important; border: 1px solid #1f2a4d; border-top: none; background: #05070f !important;
+                          min-height: 360px; max-height: 68vh; }
+.st-key-code_editor pre code { font-size: .98rem !important; line-height: 1.65 !important; }
+.ed-status { display:flex; flex-wrap:wrap; gap: 6px 18px; justify-content:space-between; padding: 6px 4px 10px; color: var(--muted); font-size: .8rem; }
 
 .qcard { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }
 .qmeta { color: var(--muted); font-size: .8rem; margin-bottom: 6px; }
@@ -133,38 +132,3 @@ def table_md(columns: list[str], rows: list[list[str]]) -> str:
     out = ["| " + " | ".join(cell(c) for c in columns) + " |", "|" + "---|" * len(columns)]
     out += ["| " + " | ".join(cell(c) for c in r) + " |" for r in rows]
     return "\n".join(out)
-
-
-def code_view(code: str, diagnostics: list[dict]) -> None:
-    """Satır numaralı kod; hata/uyarı satırları renklendirilir."""
-    marks = {}
-    for d in diagnostics:
-        if d["severity"] == "error" or d["line"] not in marks:
-            marks[d["line"]] = d["severity"]
-    lines = []
-    for n, line in enumerate(code.split("\n"), 1):
-        cls = marks.get(n, "")
-        lines.append(f'<span class="ln {cls}"><i>{n}</i>{esc(line) or " "}</span>')
-    st.html(f'<div class="codeview">{"".join(lines)}</div>')
-
-
-def terminal(result) -> None:
-    color = {"run": "#34d399" if result.ok else "#fbbf24", "compile": "#f87171", "timeout": "#fbbf24", "unavailable": "#f87171"}[result.stage]
-    status = {"run": "Çalıştı" if result.ok else f"Çalıştı (çıkış kodu {result.exit_code})", "compile": "Derleme hatası",
-              "timeout": "Zaman aşımı", "unavailable": "Motor yok"}[result.stage]
-    head = (f'<div class="head"><span class="dot" style="background:{color}"></span><b style="color:{color}">{status}</b>'
-            f'<span>· {esc(result.engine or "—")}</span><span>· {result.elapsed:.1f} sn</span></div>')
-
-    def pre(text: str) -> str:
-        return esc(text.rstrip()).replace("\r", "")
-
-    body = ""
-    if result.compile_output.strip():
-        body += f'<pre class="comp">$ derleyici\n{pre(result.compile_output)}</pre>'
-    if result.stage != "compile":
-        out = result.stdout if result.stdout else ("(çıktı yok)" if result.stage == "run" else "")
-        if out:
-            body += f"<pre>$ ./program\n{pre(out)}</pre>"
-    if result.stderr.strip():
-        body += f'<pre class="err">{pre(result.stderr)}</pre>'
-    st.html(f'<div class="term">{head}{body}</div>')

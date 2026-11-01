@@ -1,4 +1,0 @@
-gcc
-g++
-mono-mcs
-mono-runtime

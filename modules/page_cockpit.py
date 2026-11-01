@@ -7,9 +7,8 @@ from datetime import date, datetime
 import pandas as pd
 import streamlit as st
 
-from data.curriculum import COURSE_BY_ID, COURSES, EXAM_START, QUESTION_BY_ID, QUESTIONS, TEMPLATES
+from data.curriculum import COURSE_BY_ID, COURSES, EXAM_START, QUESTION_BY_ID, QUESTIONS
 from modules import progress, ui
-from modules.code_sandbox import engine_status
 from modules.state import PAGE_EXAM, PAGE_NOTES
 
 
@@ -102,13 +101,7 @@ def render() -> None:
         if q:
             st.markdown(f"- **{COURSE_BY_ID[q['course']]['short']}** · {ui.esc(q['q'])} *(×{info.get('count', 1)})*")
 
-    with st.expander("⚙️ Derleyici motoru ve veri yedeği"):
-        es = engine_status()
-        st.markdown(
-            f"- **Yerel C derleyicisi:** {es['c_local'] or '❌ yok (uzak API kullanılacak)'}\n"
-            f"- **Yerel C# (mcs/csc + mono):** {es['cs_local'] or '❌ yok (uzak API kullanılacak)'}\n"
-            f"- **Piston:** `{es['piston_url']}` {'(token tanımlı)' if es['piston_token'] else '(token yok — genel sunucu whitelist ister)'}\n"
-            f"- **Wandbox:** ücretsiz son yedek katman\n- **Kod şablonu sayısı:** {len(TEMPLATES)}")
+    with st.expander("💾 İlerleme yedeği"):
         c1, c2, c3 = st.columns(3)
         c1.download_button("⬇️ İlerlemeyi indir", progress.export_json(), file_name=f"estu_ilerleme_{datetime.now():%Y%m%d}.json",
                            mime="application/json", width="stretch")

@@ -1,4 +1,4 @@
-"""C ve C# kodu derleyip çalıştıran çok katmanlı motor.
+"""C ve C# kodu derleyip çalıştıran çok katmanlı motor (yalnızca tests/verify_content.py kullanır; uygulamada kod çalıştırma yok).
 
 Katman 1 — Yerel derleyici: gcc/clang (C) veya mcs/csc + mono (C#) kuruluysa geçici bir dizinde
            derler ve 5 sn zaman aşımıyla çalıştırır. Streamlit Cloud'da packages.txt bunları kurar.

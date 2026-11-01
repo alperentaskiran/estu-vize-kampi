@@ -12,7 +12,7 @@ import streamlit as st
 
 from data.curriculum import COURSE_BY_ID, COURSES, QUESTION_BY_ID, WEEK_BY_ID, questions_for
 from modules import progress, ui
-from modules.state import new_exam, open_in_lab, reset_exam_state
+from modules.state import new_exam, reset_exam_state
 
 LETTERS = "ABCDE"
 
@@ -80,9 +80,6 @@ def _question(exam: dict) -> None:
     else:
         st.error(f"❌ Yanlış. Doğru cevap **{LETTERS[right_shown]}) {q['options'][q['answer']]}** — soru *Tekrar Çözülecekler* havuzuna eklendi.")
     st.markdown(f"**💡 Çözüm:** {q['explain']}")
-    if q.get("run"):
-        st.button("💻 Bu kodu Editörde Aç", key=f"lab_{exam['nonce']}_{qid}", on_click=open_in_lab,
-                  kwargs={"code": q["run"], "lang": q["lang"], "stdin": q.get("stdin", "")})
 
     nav = st.columns(2)
     if exam["idx"] + 1 < total:

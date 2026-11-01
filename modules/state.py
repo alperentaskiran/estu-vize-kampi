@@ -6,31 +6,20 @@ import random
 
 import streamlit as st
 
-from data.code_templates import BY_ID as TEMPLATES
-
 PAGE_COCKPIT = "📊 Vize Kokpiti"
 PAGE_NOTES = "📚 Ders Özetleri"
-PAGE_LAB = "💻 Kod Lab (C/C#)"
+PAGE_LAB = "💻 Ders Kodları"
 PAGE_EXAM = "📝 Sınav & Yanlışlarım"
 PAGES = [PAGE_COCKPIT, PAGE_NOTES, PAGE_LAB, PAGE_EXAM]
 
 LANG_LABELS = {"c": "C", "csharp": "C#"}
 
 
-# Lab widget'larının anahtarları. Widget, değeri önceki bir çalıştırmada atanmış bir anahtarla İLK KEZ
-# oluşturulduğunda tarayıcı bu değeri göstermeyebiliyor; bu yüzden değerler widget'tan bağımsız `lab_saved`
-# sözlüğünde tutulur ve Lab sekmesine her girişte widget anahtarlarına yeniden yazılır.
-LAB_KEYS = ("lab_lang", "lab_code", "lab_stdin", "lab_engine")
-
-
 def init() -> None:
     ss = st.session_state
     ss.setdefault("nav", PAGE_COCKPIT)
     ss.setdefault("_last_nav", ss.nav)
-    ss.setdefault("page_entered", True)
-    ss.setdefault("lab_saved", {"lab_lang": "c", "lab_code": TEMPLATES["c_merhaba"]["code"], "lab_stdin": "", "lab_engine": "auto"})
     ss.setdefault("lab_template", "c_merhaba")
-    ss.setdefault("lab_result", None)
     ss.setdefault("exam", None)
     ss.setdefault("exam_notice", None)
 
@@ -41,38 +30,15 @@ def track_navigation() -> str:
     page = ss.nav or ss._last_nav  # segmented_control seçimi kaldırılırsa son sayfada kal
     if page == PAGE_EXAM and ss._last_nav != PAGE_EXAM:
         reset_exam_state(keep_questions=True)
-    ss.page_entered = page != ss._last_nav
     ss._last_nav = page
     return page
 
 
-def restore_lab_widgets() -> None:
-    """Lab sekmesine girişte (veya anahtar kaybolduysa) widget değerlerini yedekten yazar."""
-    ss = st.session_state
-    for k in LAB_KEYS:
-        if ss.page_entered or ss.get(k) is None:
-            ss[k] = ss.lab_saved[k]
-
-
-def save_lab_widgets() -> None:
-    ss = st.session_state
-    ss.lab_saved.update({k: ss[k] for k in LAB_KEYS if ss.get(k) is not None})
-
-
-# ── Kod laboratuvarı ──
-def open_in_lab(template_id: str | None = None, code: str | None = None, lang: str | None = None, stdin: str = "") -> None:
-    """'💻 Editörde Aç' düğmeleri için callback: kodu editöre yükleyip Lab sekmesine geçer."""
-    ss = st.session_state
-    if template_id:
-        t = TEMPLATES[template_id]
-        code, lang, stdin = t["code"], t["lang"], t.get("stdin", "")
-        ss.lab_template = template_id
-    else:
-        ss.lab_template = None
-    ss.lab_saved.update({"lab_lang": lang, "lab_code": code, "lab_stdin": stdin})
-    ss.lab_result = None
-    ss.nav = PAGE_LAB
-    ss._last_nav = None  # aynı sayfadan çağrılsa bile Lab'a "giriş" sayılsın → widget'lar yedekten yüklenir
+# ── Ders kodları ──
+def open_in_lab(template_id: str) -> None:
+    """'💻 Editörde Aç' düğmeleri için callback: kodu Ders Kodları editöründe gösterir."""
+    st.session_state.lab_template = template_id
+    st.session_state.nav = PAGE_LAB
 
 
 # ── Sınav motoru ──

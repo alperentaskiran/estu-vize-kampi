@@ -1,108 +1,100 @@
-"""💻 C & C# Kod Laboratuvarı: dil seçici, ders şablonları, editör, stdin, derle-çalıştır, terminal."""
+"""💻 Ders Kodları: derslerde anlatılan C / C# örneklerinin salt-okunur, ortalanmış kod editörü görünümü.
+
+Kod çalıştırma bilinçli olarak yok — uygulama hafif kalsın diye kodlar yalnızca okunur, kopyalanır ve indirilir.
+"""
 
 from __future__ import annotations
 
-import re
-
 import streamlit as st
 
-from data.curriculum import COURSE_BY_ID, TEMPLATES_BY_ID, templates_for
+from data.curriculum import COURSE_BY_ID, COURSES, TEMPLATES, TEMPLATES_BY_ID
 from modules import ui
-from modules.code_sandbox import ENGINE_LABELS, LANGS, run_code
-from modules.state import LANG_LABELS, restore_lab_widgets, save_lab_widgets
+from modules.state import LANG_LABELS, PAGE_NOTES
 
-STARTERS = {
-    "c": '#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}\n',
-    "csharp": 'using System;\n\nclass Program\n{\n    static void Main()\n    {\n        \n    }\n}\n',
-}
-_NEEDS_INPUT = {"c": re.compile(r"\b(scanf|getchar|fgets|gets)\s*\("), "csharp": re.compile(r"Console\.(ReadLine|Read|ReadKey)\s*\(")}
+FILE_NAMES = {"c": "main.c", "csharp": "Program.cs"}
+FILTERS = {"all": "Tümü", "c": "⚙️ C", "cs": "🟣 C#", "other": "🧮 Diğer"}
+
+# Şablon → ilgili ders haftası (Ders Özetleri'ne geri dönüş için)
+_WEEK_OF = {tid: (c["id"], w["title"]) for c in COURSES for w in c["weeks"] for tid in w["templates"]}
 
 
-def _load_template() -> None:
+def _filtered(key: str) -> list[str]:
+    if key == "c":
+        return [t["id"] for t in TEMPLATES if t["course"] == "c"]
+    if key == "cs":
+        return [t["id"] for t in TEMPLATES if t["course"] == "cs"]
+    if key == "other":
+        return [t["id"] for t in TEMPLATES if t["course"] not in ("c", "cs")]
+    return [t["id"] for t in TEMPLATES]
+
+
+def _pick() -> None:
+    st.session_state.lab_template = st.session_state.lab_pick
+
+
+def _filter_changed() -> None:
     ss = st.session_state
-    tid = ss.get("lab_pick")
-    if tid:
-        t = TEMPLATES_BY_ID[tid]
-        ss.lab_lang, ss.lab_code, ss.lab_stdin, ss.lab_template, ss.lab_result = t["lang"], t["code"], t.get("stdin", ""), tid, None
+    ids = _filtered(ss.lab_filter or "all")
+    if ss.lab_template not in ids:
+        ss.lab_template = ids[0]
 
 
-def _change_lang() -> None:
+def _step(ids: list[str], delta: int) -> None:
     ss = st.session_state
-    if ss.lab_lang is None:  # seçili dile tekrar tıklanınca seçim kalkar → eski dile dön
-        ss.lab_lang = ss.lab_saved["lab_lang"]
-        return
-    ss.lab_code = STARTERS[ss.lab_lang]
-    ss.lab_stdin = ""
-    ss.lab_template = None
-    ss.lab_result = None
-    ss.lab_pick = None
+    cur = ss.lab_template if ss.lab_template in ids else ids[0]
+    ss.lab_template = ids[(ids.index(cur) + delta) % len(ids)]
 
 
-def _clear() -> None:
-    ss = st.session_state
-    ss.lab_code = STARTERS[ss.lab_lang]
-    ss.lab_stdin = ""
-    ss.lab_result = None
-    ss.lab_template = None
+def _go_notes(course_id: str) -> None:
+    st.session_state.notes_course = course_id
+    st.session_state.nav = PAGE_NOTES
+
+
+def _editor(title: str, lang: str, code: str, meta: str, stdin: str = "") -> None:
+    lines = code.rstrip("\n").count("\n") + 1
+    st.html(f"""<div class="ed-tab">
+  <div class="ed-dots"><span style="background:#f87171"></span><span style="background:#fbbf24"></span><span style="background:#34d399"></span></div>
+  <div class="ed-file">📄 {ui.esc(FILE_NAMES[lang])}</div>
+  <div class="ed-title">{ui.esc(title)}</div>
+  <div class="ed-lang">{LANG_LABELS[lang]} · {lines} satır</div>
+</div>""")
+    with st.container(key="code_editor"):
+        st.code(code, language="c" if lang == "c" else "csharp", line_numbers=True)
+    st.html(f'<div class="ed-status"><span>{ui.esc(meta)}</span>'
+            + (f'<span>⌨️ Örnek girdi (stdin): <b>{ui.esc(stdin)}</b></span>' if stdin else "") + "</div>")
 
 
 def render() -> None:
     ss = st.session_state
-    restore_lab_widgets()
-    top = st.columns([1, 2.2, 1.2])
-    top[0].segmented_control("Dil", ["c", "csharp"], format_func=LANG_LABELS.get, key="lab_lang", on_change=_change_lang)
+    _, center, _ = st.columns([1, 10, 1])
+    with center:
+        # Widget değerleri her çalıştırmada, widget'tan ÖNCE yeniden yazılır (önceki çalıştırmada atanan
+        # anahtarların tarayıcıda boş görünmesi sorununa karşı).
+        ss.lab_filter = ss.get("lab_filter") or "all"
+        ids = _filtered(ss.lab_filter)
+        if ss.lab_template not in ids:
+            if ss.lab_template in TEMPLATES_BY_ID:  # başka dersten açıldıysa filtreyi genişlet
+                ss.lab_filter, ids = "all", _filtered("all")
+            else:
+                ss.lab_template = ids[0]
+        ss.lab_pick = ss.lab_template
 
-    temps = templates_for(lang=ss.lab_lang)
-    ids = [t["id"] for t in temps]
-    if ss.get("lab_pick") not in ids:
-        ss.lab_pick = ss.lab_template if ss.lab_template in ids else None
-    top[1].selectbox("📂 Ders şablonları", ids, key="lab_pick", placeholder="Derslerdeki hazır kodlardan birini seç…",
-                     format_func=lambda tid: f"[{COURSE_BY_ID[TEMPLATES_BY_ID[tid]['course']]['short']}] {TEMPLATES_BY_ID[tid]['title']}",
-                     on_change=_load_template)
-    top[2].selectbox("⚙️ Motor", list(ENGINE_LABELS), format_func=ENGINE_LABELS.get, key="lab_engine")
+        top = st.columns([1, 2])
+        top[0].segmented_control("Ders", list(FILTERS), format_func=FILTERS.get, key="lab_filter", on_change=_filter_changed,
+                                  label_visibility="collapsed")
+        top[1].selectbox("Kod", ids, key="lab_pick", on_change=_pick, label_visibility="collapsed",
+                         format_func=lambda tid: f"[{COURSE_BY_ID[TEMPLATES_BY_ID[tid]['course']]['short']}] {TEMPLATES_BY_ID[tid]['title']}")
 
-    if ss.lab_template and ss.lab_template in TEMPLATES_BY_ID:
         t = TEMPLATES_BY_ID[ss.lab_template]
-        st.caption(f"📎 Şablon: **{t['title']}** — kaynak: {t['source']}")
+        week = _WEEK_OF.get(t["id"])
+        meta = f"📎 Kaynak: {t['source']}" + (f" · 📚 {week[1]}" if week else "")
+        _editor(t["title"], t["lang"], t["code"], meta, t.get("stdin", ""))
 
-    left, right = st.columns([1.15, 1], gap="medium")
-    with left:
-        st.text_area(f"✏️ Kod editörü ({LANGS[ss.lab_lang]['label']} · {LANGS[ss.lab_lang]['file']})", key="lab_code", height=430)
-        needs_input = bool(_NEEDS_INPUT[ss.lab_lang].search(ss.lab_code))
-        st.text_area("⌨️ Program Girdisi (Stdin)" + (" — bu kod girdi okuyor!" if needs_input else ""), key="lab_stdin", height=90,
-                     placeholder="scanf / Console.ReadLine için girdiler (her satıra bir değer veya boşlukla ayır)")
-        if needs_input and not ss.lab_stdin.strip():
-            st.warning("Kod `scanf`/`Console.ReadLine` içeriyor ama Stdin boş — program girdi bekleyip boş değer okuyabilir.")
-        b = st.columns([1.6, 1, 1])
-        run_clicked = b[0].button("▶️ Derle ve Çalıştır", type="primary", width="stretch")
-        b[1].button("🧹 Temizle", on_click=_clear, width="stretch")
-        b[2].download_button("⬇️ İndir", ss.lab_code, file_name=LANGS[ss.lab_lang]["file"], width="stretch")
-        if run_clicked:
-            with st.spinner("Derleniyor ve çalıştırılıyor…"):
-                ss.lab_result = run_code(ss.lab_lang, ss.lab_code, ss.lab_stdin, engine=ss.lab_engine)
-            ss.lab_ran_code = ss.lab_code
-    save_lab_widgets()
-
-    with right:
-        st.markdown("**🖥️ Terminal**")
-        res = ss.lab_result
-        if res is None:
-            st.markdown('<div class="term"><div class="head"><span class="dot" style="background:#475569"></span>'
-                        '<span>Hazır — kodu yazıp ▶️ Derle ve Çalıştır\'a bas.</span></div><pre>$ _</pre></div>', unsafe_allow_html=True)
-            st.caption("Derleme sırası: yerel gcc/mono → Piston API → Wandbox API. Çalışma süresi sınırı 5 sn.")
-        else:
-            ui.terminal(res)
-            if res.diagnostics:
-                errs = [d for d in res.diagnostics if d["severity"] == "error"]
-                warns = [d for d in res.diagnostics if d["severity"] == "warning"]
-                st.markdown(f"**🔎 Derleyici bulguları:** {len(errs)} hata · {len(warns)} uyarı")
-                st.dataframe([{"Satır": d["line"], "Sütun": d["col"], "Tür": "❌ hata" if d["severity"] == "error" else "⚠️ uyarı",
-                               "Kod": d["code"], "Mesaj": d["message"]} for d in res.diagnostics],
-                             hide_index=True, width="stretch")
-                ui.code_view(ss.get("lab_ran_code", ss.lab_code), res.diagnostics)
-                if any("expected ';'" in d["message"] or "before" in d["message"] or d["code"] in ("CS1002", "CS1525") for d in errs):
-                    st.info("İpucu: `;` eksik hatası çoğu zaman **gösterilen satırın bir öncesindeki** satırdan kaynaklanır.")
-            if res.notes:
-                with st.expander("Motor geçiş notları"):
-                    for n in res.notes:
-                        st.caption("• " + n)
+        pos = ids.index(t["id"])
+        nav = st.columns([1, 1.3, 1.3, 1])
+        nav[0].button("⬅️ Önceki", on_click=_step, args=(ids, -1), width="stretch")
+        nav[1].download_button("⬇️ Dosyayı indir", t["code"], file_name=FILE_NAMES[t["lang"]], width="stretch")
+        if week:
+            nav[2].button("📚 Konu özetine git", on_click=_go_notes, args=(week[0],), width="stretch")
+        nav[3].button("Sonraki ➡️", on_click=_step, args=(ids, 1), width="stretch")
+        st.caption(f"{pos + 1} / {len(ids)} kod · Kodu kopyalamak için editörün sağ üstündeki kopyala simgesini kullan.")
