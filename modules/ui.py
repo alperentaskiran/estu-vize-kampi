@@ -16,7 +16,8 @@ CSS = """
   --ok: #34d399; --warn: #fbbf24; --bad: #f87171;
 }
 html, body, [class*="css"], .stMarkdown, .stText { font-family: 'Inter', system-ui, sans-serif; }
-code, pre, .stCode, textarea { font-family: 'JetBrains Mono', ui-monospace, monospace !important; }
+code, pre, .stCode, textarea { font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+  font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }  /* <= ve != gerçek karakterleriyle görünsün */
 .stApp { background: radial-gradient(1200px 600px at 10% -10%, rgba(124,92,255,.18), transparent 60%),
                      radial-gradient(900px 500px at 110% 0%, rgba(34,211,238,.12), transparent 60%), var(--bg); }
 .block-container { padding-top: 1.2rem; padding-bottom: 4rem; max-width: 1280px; }
