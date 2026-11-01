@@ -1,11 +1,11 @@
-"""BTP239 — Bilgisayarın tanımı, tarihçesi, sınıflandırılması ve sayı sistemleri.
+"""BTP239 — Bilgisayar Donanımı: bilgisayarın tanımı, tarihçesi, sınıflandırılması ve sayı sistemleri.
 
 Kaynaklar: BTP239_Hafta01.pdf, btp239_h1_donusumler.pdf (font kodlaması bozuk; slaytlar görsel olarak okundu).
 """
 
 COURSE = {
     "id": "donanim",
-    "name": "BTP239 · Bilgisayar Temelleri & Sayı Sistemleri",
+    "name": "BTP239 · Bilgisayar Donanımı",
     "short": "BTP239",
     "icon": "🧮",
     "color": "#a78bfa",
