@@ -1,6 +1,8 @@
-"""BTP239 — Bilgisayar Donanımı: bilgisayarın tanımı, tarihçesi, sınıflandırılması ve sayı sistemleri.
+"""BTP239 — Bilgisayar Donanımı: bilgisayarın tanımı, tarihçesi, sınıflandırılması, sayı sistemleri;
+kasa, güç kaynağı ve UPS; anakart (form faktörü, yonga seti, veri yolları, portlar, IRQ/DMA).
 
-Kaynaklar: BTP239_Hafta01.pdf, btp239_h1_donusumler.pdf (font kodlaması bozuk; slaytlar görsel olarak okundu).
+Kaynaklar: BTP239_Hafta01.pdf, btp239_h1_donusumler.pdf (font kodlaması bozuk; slaytlar görsel olarak okundu),
+BTP239_Hafta02.pdf, BTP239_Hafta03.pdf (görsel slaytlar ayrıca okundu).
 """
 
 COURSE = {
@@ -10,7 +12,7 @@ COURSE = {
     "icon": "🧮",
     "color": "#a78bfa",
     "teacher": "",
-    "sources": ["BTP239_Hafta01.pdf", "btp239_h1_donusumler.pdf"],
+    "sources": ["BTP239_Hafta01.pdf", "btp239_h1_donusumler.pdf", "BTP239_Hafta02.pdf", "BTP239_Hafta03.pdf"],
     "weeks": [
         {
             "id": "dn-h1",
@@ -135,6 +137,207 @@ Basamak ağırlıkları 2ⁿ⁻¹ … 2¹, 2⁰. En soldaki **MSB** (Most Signif
             "images": [],
             "templates": ["c_taban_donusum"],
         },
+        {
+            "id": "dn-h2",
+            "title": "2. Hafta — Donanımın Tanımı ve Yapısı, Kasa, Güç Kaynağı (PSU) ve UPS",
+            "sources": ["BTP239_Hafta02.pdf"],
+            "summary": """
+**Donanım:** bilgisayarı oluşturan **fiziksel parçaların tümü** — elle tutulur, gözle görülür. **İç donanım:** kasanın içindekiler · **Dış donanım:** kasanın dışındakiler.
+**Yazılım:** bilgisayarı belirli işlevleri yerine getirmek üzere yöneten **kodlanmış komutlar dizisi**; donanıma "ne yapacağını" söyler; diğer adı **program**. Türleri: **uygulama** ve **sistem** yazılımları.
+**Bilgisayar = Donanım + Yazılım.** Donanım bileşenleri: CPU · Giriş, Çıkış, Depolama birimleri · RAM, Kontrol Birimi, Aritmetik ve Mantıksal İşlem Birimi (ALU).
+Şema: Donanım → **Ana birimler** (HDD, RAM, işlemci, ekran kartı, anakart, power supply) + **Çevre birimleri** (girdi / çıktı) · Yazılım → işletim sistemi (Windows, DOS, Unix, Linux, MacOS) + diğer (oyun, ofis, antivirüs…).
+
+**CPU (işlemci):** en önemli parça, "bilgisayarın beyni". Üç temel işlem: **1)** ALU ile matematiksel ve mantıksal işlemler **2)** bellekteki verilerin yerlerini değiştirme **3)** komutlara göre hareket ve yeni görev başlatma.
+İşlemci kodları **16'lık (heksadesimal)** yapıdadır → **makine kodu**; her işlemcide ayrı tanımlıdır. Program = işlemcide tanımlı kodların belirli bir mantıkla sıralanmasıyla oluşan komut blokları.
+**Akıllı donanım:** kendine has işlemcisi olan donanım → ana işlemcinin yükünü hafifletir, zaman kazandırır.
+
+**Giriş birimleri:** klavye, fare, (dokunmatik) ekran, disket/CD/DVD-ROM, tarayıcı, mikrofon, modem · **Çıkış:** ekran, yazıcı, **çizici (plotter)**, hoparlör, disket/CD/DVD ·
+**Depolama:** sabit disk, disket, CD/DVD-ROM, flash disk (USB bellek), hafıza kartı, taşınabilir HDD.
+
+**Kasa:** parçaları bir arada tutan metal/plastik kutu; **tozdan, darbeden ve elektromanyetik parazitten** korur.
+İyi kasa: **genişletilebilirlik, sessiz çalışma, standartlara uyum ve kalite, montaj-bakım kolaylığı, yaralanmalara karşı önlem**.
+Sınıflandırma: yerleşime göre (dikey/yatay) · büyüklüğe göre (full, mid, mini) · kullanım amacına göre (masaüstü, sunucu, rack-mount).
+* **Full-tower:** dikey, **en büyük** PC kasası, **60–90 cm**, küçük sunucularda; ATX + MicroATX; en az 3, bazen 5 sabit disk yeri; yerde durması uygun.
+* **Mid-tower:** dikey, orta boy, **50–60 cm**; ATX + MicroATX; esnek tasarım → **en sık tercih edilen**; full-tower'dan az sürücü bölmesi.
+* **Mini-tower:** dikey, mid-tower'dan alçak ama biraz geniş; **MicroATX**; **terfi (upgrade) için iyi değil**, iç soğutması en düşük.
+* **Masaüstü (desktop):** **yatay**, üzerine ekran konur, yer tasarrufu; gelişme kapasitesi kısıtlı; terfi planlanmayan hazır PC'ler.
+* **Slim:** hem dikey hem yatay; genelde mid-tower büyüklüğünde; ince, şık, modern.
+* **Sunucu kasası:** çok sayıda bölme ve genişleme yuvası, büyük, dikdörtgen değil **kare** biçimli.
+* **Rack-mount:** büyük şirketlerde çok sayıda sunucu düşey rafta; boy **U (unit)** ile: **1U = 1,75 inç** (4U = 4 × 1,75 = **7 inç**); genişlik **her zaman 19 inç (48,3 cm)**.
+
+**Sürücü bölmeleri:** harici (kasa dışından erişilir: disket, CD/DVD-ROM) ve dâhili (kasa açılır: sabit disk). İki boy: **3½ inç** (harici → disket, dâhili → **sabit disk**) ve
+**5¼ inç** (eski 5¼ disket sürücülerinden kalma; bugün **CD/DVD-ROM optik sürücüler** için; 3½ HDD takmak için özel kafesler var).
+
+**Güç kaynağı (PSU):** aslında güç *üretmez*; **gerilim düşürücü transformatör** gibi çalışır → **220 V AC**'yi düşük voltajlı **DC**'ye çevirir: **12 V, 5 V, 3,3 V**.
+Tipler: **AT** (eski, anakartta **P8/P9**) · **ATX** (modern, tek **P1**; ATX, MicroATX, FlexATX). Ortak özellikler: güç bağlantısı (priz), anakart gücü, çevre birimi konnektörleri, **fan** (PSU'yu ve kasayı soğutur).
+Kaliteyi belirleyen iki özellik: **güç değeri (Watt)** ve **konnektör tipi**. Piyasada **250–1800 W**; sıradan kullanıcıya **en az 400–500 W** güvenli.
+Tipik değerler: AGP kart 20–30 W · PCI kart 5 W · Ethernet 4 W · RAM 25–30 W · disket 5 W · CD-ROM 10–25 W · HDD 5200 rpm 5–11 W · HDD 7200 rpm 5–15 W ·
+Dual Core 65–100 W · Core 2 Quad 95–150 W · anakart 20–30 W.
+**Yetersiz güç belirtileri:** POST tamamlanamaz (POST ekranında kalır) · POST biter ama OS yüklenmez · OS yüklenir ama yük binince **sürekli yeniden başlar**.
+
+**Konnektörler:** anakarta → **P8/P9** (AT; **siyah kablolar yan yana** takılır, aksi hâlde **anakart yanabilir**; çıkıntı ters takmayı önler) ve **P1** (ATX; 5 V ve 12 V'a ek **3,3 V**; **20 pin → yeni sistemlerde 24 pin**).
+Çevre birimlerine → **Molex** (5/12 V aygıtlar; çentikli, sertçe itilir; **sarı 12 V, kırmızı 5 V, siyah toprak**) · **SATA** (SATA diskler; **15 pin, L şekli**; yoksa Molex-SATA dönüştürücü) ·
+**Mini** (3½ disket sürücü standardı; ters takıp bozmak kolay).
+
+**UPS (kesintisiz güç kaynağı):** şebekedeki çöküntü, yükselme, ani değişim, harmonik gibi dalgalanmalara karşı korur **ve** kesinti sırasında enerji üreterek sistemin devamlılığını sağlar.
+**3 bileşen:** **Akü** (kesintide besler) · **Dönüştürücü / İnvertör** (akünün **DC**'sini **AC**'ye çevirir) · **Şarj ünitesi** (220 V **AC**'yi akünün depolayacağı **DC**'ye çevirir).
+Karakteristikler: **VA değeri** (sağlayabileceği en fazla güç; invertör kapasitesine ve nominal AC voltaja bağlı) · **çalışma (yedekleme) süresi** (bağlı cihazların çektiği güç, ortam sıcaklığı, şarj düzeyi, dönüşüm verimi) ·
+**çıkış dalga şekli** (çoğunlukla sinüzoidal) · durum lambaları (normal / aşırı yük / aküde) · aşırı yük koruması (veya sadece sigorta) · **devreye girme zamanı 2–4 ms** (uzun olan tercih edilmez).
+Alırken: topraklı priz, geniş voltaj aralığı, otomatik voltaj regülasyonu, aşırı yük ve kısa devre koruması, **cold start** (elektrik yokken aküden başlatma), anahtarlama süresi ~2 ms.
+""",
+            "concepts": [
+                ("İç / dış donanım", "Kasanın içindeki / dışındaki fiziksel bileşenler."),
+                ("Makine kodu", "İşlemciye özgü, heksadesimal yapıdaki komut kodları."),
+                ("Akıllı donanım", "Kendi işlemcisi olan, ana CPU'nun yükünü hafifleten donanım."),
+                ("1U", "Rack-mount kasa yükseklik birimi = 1,75 inç; genişlik 19 inç."),
+                ("PSU", "220 V AC'yi 12 V, 5 V, 3,3 V DC'ye çeviren güç kaynağı."),
+                ("P1", "ATX anakart güç konnektörü; 20 → 24 pin, 3,3 V hattı da içerir."),
+                ("İnvertör", "UPS'te akünün DC gerilimini AC'ye çeviren dönüştürücü."),
+                ("VA değeri", "UPS'in sağlayabileceği en fazla güç."),
+            ],
+            "must": [
+                "Yazılımın diğer adı: program · türleri: uygulama + sistem",
+                "CPU'nun 3 işlemi: ALU işlemleri, bellekte veri taşıma, komuta göre görev başlatma",
+                "Makine kodu heksadesimal ve işlemciye özgü · akıllı donanım = kendi işlemcisi var",
+                "Full 60–90 cm (en büyük) · Mid 50–60 cm (en yaygın) · Mini MicroATX (terfiye uygun değil)",
+                "Rack: 1U = 1,75 inç, 4U = 7 inç, genişlik her zaman 19 inç (48,3 cm)",
+                "3½ inç → HDD (dâhili) / disket (harici) · 5¼ inç → CD/DVD-ROM",
+                "PSU: 220 V AC → 12 V / 5 V / 3,3 V DC · AT = P8/P9, ATX = P1 (24 pin)",
+                "P8/P9: siyah kablolar yan yana, yoksa anakart yanar",
+                "Molex: sarı 12 V, kırmızı 5 V, siyah toprak · SATA güç 15 pin, L şekli",
+                "Yetersiz güç: POST'ta kalma, OS yüklenememe, sürekli reset · en az 400–500 W",
+                "UPS = akü + invertör (DC→AC) + şarj ünitesi (AC→DC) · devreye girme 2–4 ms",
+            ],
+            "cheat": [
+                {"title": "Kasa türleri", "columns": ["Kasa", "Yerleşim", "Boyut / anakart", "Not"], "rows": [
+                    ["Full-tower", "Dikey", "60–90 cm · ATX, MicroATX", "En büyük; küçük sunucular; 3–5 HDD yeri"],
+                    ["Mid-tower", "Dikey", "50–60 cm · ATX, MicroATX", "En sık tercih edilen"],
+                    ["Mini-tower", "Dikey", "Mid'den alçak · MicroATX", "Terfiye uygun değil, soğutma en düşük"],
+                    ["Masaüstü", "Yatay", "Üstüne ekran konur", "Gelişme kapasitesi kısıtlı"],
+                    ["Slim", "Dikey / yatay", "≈ mid-tower", "İnce, şık, yer tasarrufu"],
+                    ["Sunucu", "—", "Büyük, kare biçim", "Çok bölme ve genişleme yuvası"],
+                    ["Rack-mount", "Raf", "1U = 1,75 inç, 19 inç genişlik", "Büyük şirket veri merkezleri"]]},
+                {"title": "Güç konnektörleri", "columns": ["Konnektör", "Nereye?", "Özellik"], "rows": [
+                    ["P8/P9", "AT anakart", "Siyah kablolar yan yana; ters takılırsa anakart yanar"],
+                    ["P1", "ATX anakart", "20 → 24 pin; 3,3 V + 5 V + 12 V"],
+                    ["Molex", "5/12 V aygıtlar", "Sarı 12 V · kırmızı 5 V · siyah toprak"],
+                    ["SATA", "SATA sabit disk", "15 pin, L şekli; Molex-SATA dönüştürücü var"],
+                    ["Mini", "3½ disket sürücü", "Ters takıp bozmak kolay"]]},
+                {"title": "Tipik güç gereksinimleri", "columns": ["Donanım", "Güç"], "rows": [
+                    ["AGP kart", "20–30 W"], ["PCI kart", "5 W"], ["Ethernet kartı", "4 W"], ["RAM", "25–30 W"], ["Disket sürücü", "5 W"],
+                    ["CD-ROM", "10–25 W"], ["HDD 5200 rpm", "5–11 W"], ["HDD 7200 rpm", "5–15 W"], ["Dual Core", "65–100 W"],
+                    ["Core 2 Quad", "95–150 W"], ["Anakart", "20–30 W"]]},
+                {"title": "UPS", "columns": ["Bileşen / özellik", "Açıklama"], "rows": [
+                    ["Akü", "Kesintide sistemi besler"], ["Dönüştürücü (invertör)", "DC → AC"], ["Şarj ünitesi", "220 V AC → DC (aküyü doldurur)"],
+                    ["VA değeri", "Sağlayabileceği en fazla güç"], ["Çalışma süresi", "Yük, sıcaklık, şarj düzeyi, verim"],
+                    ["Dalga şekli", "Çoğunlukla sinüzoidal"], ["Devreye girme", "2–4 ms (alırken ~2 ms)"], ["Cold start", "Elektrik yokken aküden açılabilme"]]},
+            ],
+            "images": [("dn_bilgisayar_bilesenleri.jpg", "Bilgisayar ve bileşenleri: donanım (ana birimler, çevre birimleri) ve yazılım (BTP239_Hafta02 s.12)")],
+            "templates": ["c_watt_hesabi"],
+        },
+        {
+            "id": "dn-h3",
+            "title": "3. Hafta — Anakart: Form Faktörü, Yonga Seti, Veri Yolları, Portlar, IRQ ve DMA",
+            "sources": ["BTP239_Hafta03.pdf"],
+            "summary": """
+**Anakart üzerindekiler (s.2):** PCI, PCI-E ve **PCI-E 16x (ekran kartı)** yuvaları · giriş/çıkış portları · **12 V güç bağlantısı** · **işlemci soketi** · **kuzey köprüsü** · **RAM slotları** ·
+**anakart güç kablosu soketi** · disket sürücü bağlantısı · **güney köprüsü** · IDE ve SATA girişleri · kasa ön panel bağlantıları · **BIOS pili**.
+
+**Form faktörü:** anakartın fiziksel yapısı, boyutu, şekli; soket ve slotların dizilimi, sayısı, yerleşimi, **montaj delik sayısı**.
+
+| Form faktörü | Boyut (mm) | En fazla slot |
+|---|---|---|
+| **ATX** | 305×244 | 7 |
+| **Micro ATX** | 244×244 | 4 |
+| Flex ATX | 229×191 | 3 |
+| BTX | 325×266 | 7 |
+| Micro BTX | 264×267 | 4 |
+| **Mini-ITX** | 170×170 | 1 |
+| Nano-ITX | 120×120 | 1 |
+| **Pico-ITX** | 100×72 | – |
+
+Montaj noktaları: **Mini-ITX → C, F, H, J** · MicroATX → B, C, F, H, J, L, M, R, S · ATX → A, C, F, G, H, J, K, L, M.
+C, F, H, J üçünde de ortak → **küçük kart, büyük kasaya** takılabilir.
+
+**Yonga seti (chipset):** anakart performansını belirler; anakarttaki **en büyük iki çipten biri**; birimler arası veri alışverişini yönetir; desteklenen **işlemci tipi, bellek tipi ve boyutu, çevre birimleri**ni belirler.
+Eski sistemlerde iki parça: **Kuzey köprüsü (Northbridge)** — CPU'ya **FSB (Front Side Bus)** ile bağlı; **RAM** ve **PCI Express x16** (ekran kartı) gibi hızlı birimler.
+**Güney köprüsü (Southbridge)** — kuzeye **DMI (Direct Media Interface)** ile bağlı; **S-ATA, USB, IDE, PCI, PCIe x1, HD-Audio, Super I/O (LPC), BIOS (flash, SPI), System Management Bus** gibi yavaş birimler.
+Yeni sistemler: **tek yongalı sistem**.
+
+**Veri yolları (BUS):** **adres yolu** (işlemciden birimlere tek yönlü; hangi adres?) ve **veri yolu** (çift yönlü; veri taşır) + kontrol hatları (MWTC, MRDC, IOWC, IORC); ROM, RAM, klavye, yazıcı bu yollara bağlı.
+**Genişleme yuvaları:**
+* **ISA** (Industry Standard Architecture) — **ilk** veri yolu, **siyah** yuvalar, **8 ve 16 bit**, artık üretilmiyor.
+* **PCI** (Peripheral Component Interconnect) — **beyaz** yuvalar, **32 ve 64 bit**, ISA'dan büyük yuva, **tak-çalıştır**, **33 / 66 MHz**; LAN, SCSI, USB kartları.
+* **AGP** (Advanced Graphics Port) — ekran kartı; **paralel**, **32 bit**; **1x, 2x, 4x, 8x**, **her çarpan 266 MB/s** (8x ≈ 2128 MB/s); **0,8 V, 1,5 V, 3,3 V**; yerini PCIe'ye bıraktı.
+* **PCIe** (PCI Express) — **seri**; **her hat tek yön için 250 MB/s** (PCIe 1.x); **x16 = 4 GB/s**; PCI'daki **paylaşımlı** yol yerine **ayrı (noktadan noktaya) yollar**; **x1, x4, x8, x16** slotlar; PCI'dan çok daha hızlı.
+  Nesiller ~her 3 yılda bant genişliğini ikiye katlar: PCIe 1.0 (2003, 2,5 GT/s) · 2.0 (2007, 5) · 3.0 (2010, 8, 128b/130b) · 4.0 (2017, 16) · 5.0 (2019, 32) · 6.0 (2021, 64 GT/s, PAM-4).
+
+**USB:** evrensel seri veri yolu, **tak-çalıştır**, harici birimler. **USB 2.0 port siyah**; A/B tipi **4 pin**, mini/mikro **5 pin**. **USB 3.0 port mavi**, **9 pin**.
+
+| USB | İsim | Yıl | Hız | Güç | Konnektör |
+|---|---|---|---|---|---|
+| 1.1 | – | 1998 | 12 Mbps | 150 mA, 5 V, 0,75 W | A, B |
+| **2.0** | **High Speed** | 2000 | **480 Mbps** | 500 mA, 5 V, 2,5 W | A, B |
+| **3.0** | **SuperSpeed** | 2008 | **5 Gbps** | 1,5 A, 5 V, 7,5 W | A, B |
+| 3.1 | SuperSpeed+ | 2013 | 10 Gbps | 5/12/20 V, 100 W | **C** |
+| 3.2 | SuperSpeed+ | 2017 | 20 Gbps | 5 A, 20 V, 100 W | C |
+| **4.0** | SuperSpeed+ | 2019 | **40 Gbps** | 5 A, 20 V, 100 W | C |
+
+**Arka panel portları:** PS/2 klavye (mor) ve fare (yeşil) · VGA/D-sub · DVI-I · HDMI · IEEE 1394a (FireWire) · optik S/PDIF çıkış · eSATA · USB 2.0 / 3.0 · **RJ-45 Gigabit LAN** · analog ses.
+
+**Anakart seçimi:** **soket tipi** (LGA 1366, LGA 2066, **AM4 1331 pin**, **TR4 4094 pin**) · **FSB hızı** · bellek desteği · slot tipi ve sayısı · tümleşik kartlar · **disk arayüzü (SATA / IDE-PATA)**.
+**Ek özellikler:** aşırı gerilim, aşırı ısınma, elektrik kesilmesi, statik elektrik, nem korumaları · **ikili BIOS** · üzerinde hazır sistemler · overclock kolaylığı · donanım arıza göstergeleri ·
+USB ile hızlı/kapalıyken şarj · akıllı güç yönetimi · kolay BIOS yedekleme · otomatik performans optimizasyonu.
+
+**IRQ (kesme istekleri):** **0–15, 16 hat**; bir aygıt **tek** IRQ kullanır; iki aygıt aynı IRQ'yu kullanırsa **IRQ çakışması → sistem kilitlenebilir**.
+**IRQ 0 sistem saati** · **1 klavye** · 2 programlanabilir (COM3/COM4, modem) · 3 COM2 · 4 COM1 · 5 ses kartı (LPT2) · **6 disket denetleyicisi** · **7 LPT1** (ilk paralel port) ·
+**8 gerçek zamanlı saat (RTC)** · 9–11 serbest (ağ, ses, SCSI, PCI) · **12 PS/2 fare** · **13 FPU (matematik işlemci)** · **14 birinci IDE** · **15 ikinci IDE**.
+**DMA kanalları:** aygıtların **doğrudan bellek** ile veri alışverişi yaptığı yollar (CPU'yu meşgul etmeden); **8 kanal, 0–7**; ses kartı, disket, yazıcı portu, ağ kartı.
+""",
+            "concepts": [
+                ("Form faktörü", "Anakartın boyutu, şekli, slot/soket dizilimi ve montaj delikleri."),
+                ("Yonga seti", "Birimler arası veri trafiğini yöneten, desteklenen CPU/RAM'i belirleyen çip(ler)."),
+                ("Kuzey köprüsü", "CPU (FSB), RAM ve PCIe x16 gibi hızlı birimler."),
+                ("Güney köprüsü", "SATA, USB, PCI, ses, BIOS gibi yavaş birimler; kuzeye DMI ile bağlı."),
+                ("PCIe hattı", "Seri, ayrı yol; tek yönde 250 MB/s; x16 = 4 GB/s."),
+                ("IRQ", "Aygıtın CPU'dan dikkat istediği kesme hattı (0–15)."),
+                ("DMA", "CPU'ya uğramadan doğrudan bellek erişimi; 8 kanal (0–7)."),
+            ],
+            "must": [
+                "ATX 305×244 (7 slot) · Micro ATX 244×244 (4) · Mini-ITX 170×170 (1) · en küçük Pico-ITX 100×72",
+                "Mini-ITX montaj noktaları C, F, H, J — ATX ve MicroATX'te de var",
+                "Kuzey: CPU-FSB, RAM, PCIe x16 · Güney: SATA, USB, PCI, ses, BIOS (DMI ile bağlı)",
+                "ISA: ilk, siyah, 8/16 bit · PCI: beyaz, 32/64 bit, 33/66 MHz, tak-çalıştır",
+                "AGP: paralel, 32 bit, çarpan başına 266 MB/s, 0,8/1,5/3,3 V",
+                "PCIe: seri, hat başına 250 MB/s, x16 = 4 GB/s, ayrı yollar",
+                "USB 2.0 siyah 4 pin 480 Mbps · USB 3.0 mavi 9 pin 5 Gbps · USB 4.0 40 Gbps",
+                "AM4 1331 pin · TR4 4094 pin",
+                "16 IRQ (0–15): 0 saat, 1 klavye, 6 disket, 8 RTC, 12 PS/2 fare, 13 FPU, 14/15 IDE",
+                "IRQ çakışması → kilitlenme · DMA 8 kanal (0–7)",
+            ],
+            "cheat": [
+                {"title": "Form faktörleri", "columns": ["Form faktörü", "Boyut (mm)", "En fazla slot", "Montaj noktaları"], "rows": [
+                    ["ATX", "305×244", "7", "A, C, F, G, H, J, K, L, M"], ["Micro ATX", "244×244", "4", "B, C, F, H, J, L, M, R, S"],
+                    ["Flex ATX", "229×191", "3", "—"], ["BTX", "325×266", "7", "—"], ["Micro BTX", "264×267", "4", "—"],
+                    ["Mini-ITX", "170×170", "1", "C, F, H, J"], ["Nano-ITX", "120×120", "1", "—"], ["Pico-ITX", "100×72", "–", "—"]]},
+                {"title": "Genişleme yuvaları", "columns": ["Yuva", "Renk / iletişim", "Genişlik", "Hız"], "rows": [
+                    ["ISA", "Siyah", "8 / 16 bit", "İlk veri yolu, artık yok"], ["PCI", "Beyaz, paylaşımlı", "32 / 64 bit", "33 / 66 MHz, tak-çalıştır"],
+                    ["AGP", "Paralel", "32 bit", "Çarpan × 266 MB/s (1x–8x)"], ["PCIe", "Seri, ayrı yollar", "x1, x4, x8, x16", "Hat başına 250 MB/s; x16 = 4 GB/s"]]},
+                {"title": "IRQ tablosu", "columns": ["IRQ", "Aygıt"], "rows": [
+                    ["0", "Sistem saati"], ["1", "Klavye"], ["2", "Programlanabilir (COM3/4, modem)"], ["3", "COM2"], ["4", "COM1"], ["5", "Ses kartı / LPT2"],
+                    ["6", "Disket denetleyicisi"], ["7", "LPT1 (paralel port)"], ["8", "Gerçek zamanlı saat"], ["9–11", "Serbest (ağ, ses, SCSI, PCI)"],
+                    ["12", "PS/2 fare"], ["13", "FPU (matematik işlemci)"], ["14", "Birinci IDE"], ["15", "İkinci IDE"]]},
+                {"title": "Kuzey ve güney köprüsü", "columns": ["Köprü", "Bağlı birimler"], "rows": [
+                    ["Kuzey (Northbridge)", "CPU (FSB), RAM, PCI Express x16"],
+                    ["Güney (Southbridge)", "S-ATA, USB, IDE, PCI, PCIe x1, HD-Audio, Super I/O, BIOS (flash), SMBus"]]},
+            ],
+            "images": [("dn_anakart.jpg", "Anakart üzerindeki bileşenler (BTP239_Hafta03 s.2)"),
+                       ("dn_form_faktoru.jpg", "Form faktörü boyutları ve en fazla slot sayısı (s.4)"),
+                       ("dn_kuzey_guney.jpg", "Kuzey-güney köprüsü mimarisi (s.10)"),
+                       ("dn_usb_tablo.jpg", "USB sürümleri: hız, güç ve konnektör (s.22)"),
+                       ("dn_portlar.jpg", "Anakart arka panel portları (s.23)")],
+            "templates": ["c_bant_genisligi"],
+        },
     ],
     "flashcards": [
         ("GIGO ilkesi?", "Garbage In, Garbage Out — çöp girerse çöp çıkar."),
@@ -154,6 +357,26 @@ Basamak ağırlıkları 2ⁿ⁻¹ … 2¹, 2⁰. En soldaki **MSB** (Most Signif
         ("(11110101011111)₂ = (?)₁₆", "3D5F"),
         ("'F' karakterinin ASCII kodu?", "70 → 1000110"),
         ("67256 kaç baytla ifade edilir?", "3 bayt (2 bayt en fazla 65535)."),
+        ("Yazılımın diğer adı ve türleri?", "Program; uygulama ve sistem yazılımları."),
+        ("Akıllı donanım nedir?", "Kendine has işlemcisi olan, ana CPU'nun yükünü hafifleten donanım."),
+        ("En büyük PC kasası ve yüksekliği?", "Full-tower, 60–90 cm."),
+        ("En sık tercih edilen kasa?", "Mid-tower (50–60 cm)."),
+        ("1U ve rack genişliği?", "1U = 1,75 inç; genişlik her zaman 19 inç (48,3 cm)."),
+        ("5¼ inç bölmeler bugün ne için kullanılır?", "CD-ROM / DVD-ROM optik sürücüler."),
+        ("PSU hangi voltajları üretir?", "220 V AC → 12 V, 5 V, 3,3 V DC."),
+        ("AT ve ATX anakart güç konnektörleri?", "AT: P8/P9 · ATX: P1 (20 → 24 pin)."),
+        ("Molex kablo renkleri?", "Sarı 12 V · kırmızı 5 V · siyah toprak."),
+        ("SATA güç konnektörü kaç pin?", "15 pin, L şeklinde."),
+        ("UPS'in 3 bileşeni?", "Akü · dönüştürücü/invertör (DC→AC) · şarj ünitesi (AC→DC)."),
+        ("UPS devreye girme süresi?", "2–4 ms."),
+        ("ATX / Micro ATX / Mini-ITX boyutları?", "305×244 · 244×244 · 170×170 mm."),
+        ("Kuzey köprüsüne bağlı birimler?", "CPU (FSB), RAM, PCIe x16."),
+        ("ISA ve PCI yuva renkleri?", "ISA siyah · PCI beyaz."),
+        ("AGP 8x bant genişliği?", "8 × 266 = 2128 MB/s (~2,1 GB/s)."),
+        ("PCIe x16 bant genişliği?", "16 × 250 MB/s = 4 GB/s (tek yön)."),
+        ("USB 2.0 ve 3.0 port renkleri / pin sayıları?", "2.0 siyah, 4 pin · 3.0 mavi, 9 pin."),
+        ("IRQ 0, 1, 8, 12, 13?", "Sistem saati, klavye, RTC, PS/2 fare, FPU."),
+        ("Kaç IRQ ve kaç DMA kanalı vardır?", "16 IRQ (0–15) · 8 DMA (0–7)."),
     ],
 }
 
@@ -257,4 +480,141 @@ QUESTIONS = [
     {"week": "dn-h1b", "q": "Standart ASCII kod tablosu hangi aralığı kapsar?",
      "options": ["0 – 255", "0 – 127", "1 – 128", "128 – 255"], "answer": 1,
      "explain": "Standart ASCII 0–127; genişletilmiş ASCII 128–255."},
+    # ───────────────────────── 2. Hafta · Donanım, Kasa, Güç Kaynağı, UPS ─────────────────────────
+    {"week": "dn-h2", "q": "Bilgisayarı belirli işlevleri yerine getirmek üzere yöneten kodlanmış komutlar dizisine ne ad verilir?",
+     "options": ["Donanım", "Yazılım (program)", "Yonga seti", "Makine dili tablosu"], "answer": 1,
+     "explain": "Yazılım donanıma 'ne yapacağını' söyler; diğer adı programdır. Uygulama ve sistem yazılımları olarak ikiye ayrılır."},
+    {"week": "dn-h2", "q": "Aşağıdakilerden hangisi CPU'nun gerçekleştirdiği üç temel işlemden biri DEĞİLDİR?",
+     "options": ["ALU aracılığıyla matematiksel ve mantıksal işlemler", "Bellekteki verilerin yerlerini değiştirme", "Komutlara göre hareket edip yeni görev başlatma", "220 V AC gerilimi DC'ye dönüştürme"], "answer": 3,
+     "explain": "AC → DC dönüşümü güç kaynağının (PSU) işidir. CPU'nun 3 işlemi: ALU işlemleri, bellekte veri taşıma, komutlara göre görev başlatma."},
+    {"week": "dn-h2", "q": "İşlemci üzerinde çalışan makine kodları için hangisi doğrudur?",
+     "options": ["Onluk (desimal) yapıdadır ve tüm işlemcilerde aynıdır", "16'lık (heksadesimal) yapıdadır ve her işlemcide ayrı tanımlıdır", "Sadece ikilik yapıdadır ve işletim sistemi tanımlar", "Sekizlik yapıdadır ve BIOS'ta saklanır"], "answer": 1,
+     "explain": "Slayt: işlemci kodları 16'lık (heksadesimal) yapıdadır, bunlara makine kodu denir ve her işlemcide ayrı tanımlıdır."},
+    {"week": "dn-h2", "q": "Kendine has işlemcisi olan ve ana işlemcinin yükünü hafifleten donanımlara ne ad verilir?",
+     "options": ["Çevre birimi", "Akıllı donanım", "Gömülü yazılım", "Yonga seti"], "answer": 1,
+     "explain": "Akıllı donanım kendi işlemcisiyle iş yapar; ana işlemci artan zamanda başka görevleri yerine getirir, zaman kazanılır."},
+    {"week": "dn-h2", "q": "Aşağıdakilerden hangisi slayta göre bir ÇIKIŞ birimidir?",
+     "options": ["Tarayıcı (scanner)", "Mikrofon", "Çizici (plotter)", "Klavye"], "answer": 2,
+     "explain": "Çıkış birimleri: ekran, yazıcı, çizici (plotter), hoparlör, disket/CD/DVD. Tarayıcı, mikrofon ve klavye giriş birimidir."},
+    {"week": "dn-h2", "q": "Aşağıdakilerden hangisi iyi bir bilgisayar kasasında bulunması gereken özelliklerden biri DEĞİLDİR?",
+     "options": ["Genişletilebilirlik", "Sessiz çalışma", "Yüksek watt değeri", "Montaj ve bakım kolaylığı"], "answer": 2,
+     "explain": "Kasa özellikleri: genişletilebilirlik, sessiz çalışma, standartlara uyum ve kalite, montaj-bakım kolaylığı, yaralanmalara karşı önlem. Watt, güç kaynağının özelliğidir."},
+    {"week": "dn-h2", "q": "En büyük boyuta sahip, 60–90 cm yüksekliğinde, daha çok küçük sunucularda kullanılan dikey kasa türü hangisidir?",
+     "options": ["Mid-tower", "Full-tower", "Mini-tower", "Slim"], "answer": 1,
+     "explain": "Full-tower: en büyük PC kasası, 60–90 cm, ATX/MicroATX, en az 3 bazen 5 sabit disk yeri. Mid-tower 50–60 cm."},
+    {"week": "dn-h2", "q": "Esnek tasarımı ve çoğu kullanıcıya yeterli alanı sayesinde en sık tercih edilen kasa türü hangisidir?",
+     "options": ["Full-tower", "Mid-tower", "Masaüstü (desktop)", "Sunucu kasası"], "answer": 1,
+     "explain": "Mid-tower: orta boy (50–60 cm), ATX ve MicroATX destekler, sıklıkla tercih edilir."},
+    {"week": "dn-h2", "q": "MicroATX anakart için uygun olan, ileride terfi yapmayı planlayanlar için iyi bir seçim olmayan ve iç soğutması en düşük kasa hangisidir?",
+     "options": ["Mini-tower", "Full-tower", "Rack-mount", "Sunucu kasası"], "answer": 0,
+     "explain": "Mini-tower mid-tower'dan alçak ve biraz geniştir; terfiye uygun değildir ve iç soğutmanın en düşük düzeyini sunar."},
+    {"week": "dn-h2", "q": "3U yüksekliğindeki bir rack-mount kasa kaç inç yüksekliğindedir?",
+     "options": ["3 inç", "5,25 inç", "7 inç", "19 inç"], "answer": 1,
+     "explain": "1U = 1,75 inç → 3 × 1,75 = **5,25 inç**. (Slayt örneği: 4U = 7 inç.)"},
+    {"week": "dn-h2", "q": "Rack-mount kasaların standart raflara uyabilmesi için genişliği her zaman ne kadardır?",
+     "options": ["17 inç", "19 inç (48,3 cm)", "21 inç", "1,75 inç"], "answer": 1,
+     "explain": "Genişlik her zaman 19 inç (48,3 cm); yükseklik U birimiyle (1U = 1,75 inç) ifade edilir."},
+    {"week": "dn-h2", "q": "Günümüzde 5¼ inçlik sürücü bölmeleri hangi aygıtlar için kullanılmaya devam etmektedir?",
+     "options": ["Sabit diskler", "Disket sürücüler", "CD-ROM / DVD-ROM optik sürücüler", "Güç kaynakları"], "answer": 2,
+     "explain": "5¼ disketler kullanılmasa da optik sürücüler 5¼ bölmeye ihtiyaç duyar. Sabit diskler dâhili 3½ inç bölmelere takılır."},
+    {"week": "dn-h2", "q": "Bilgisayar güç kaynağı (PSU) için hangisi doğrudur?",
+     "options": ["Kendi elektriğini üretir", "220 V AC'yi 12 V, 5 V ve 3,3 V DC'ye dönüştüren gerilim düşürücü olarak çalışır", "DC'yi 220 V AC'ye dönüştürür", "Sadece 12 V üretir"], "answer": 1,
+     "explain": "Slayt: \"Bir PC güç kaynağı aslında hiç güç sağlamaz\" — gerilim düşürücü transformatör gibi AC'yi düşük voltajlı DC'ye çevirir."},
+    {"week": "dn-h2", "q": "Aşağıdaki voltajlardan hangisi PC güç kaynağının ürettiği DC voltajlardan biri DEĞİLDİR?",
+     "options": ["12 V", "5 V", "3,3 V", "24 V"], "answer": 3,
+     "explain": "Dönüştürülen voltajlar 12 V, 5 V ve 3,3 V'tur. ('24' P1 konnektörünün pin sayısıdır, voltaj değil.)"},
+    {"week": "dn-h2", "q": "ATX tip güç kaynağı anakarta hangi konnektörle bağlanır?",
+     "options": ["P8/P9", "P1", "Molex", "Mini"], "answer": 1,
+     "explain": "AT (eski) → P8/P9 · ATX (modern) → tek P1 konnektörü (önceleri 20, yenilerde 24 pin; 3,3 V hattı da var)."},
+    {"week": "dn-h2", "q": "P8/P9 konnektörleri takılırken siyah kablolar yan yana gelmezse ne olur?",
+     "options": ["Bilgisayar sadece açılmaz", "Anakart yanabilir", "Fan ters döner", "Hiçbir şey olmaz"], "answer": 1,
+     "explain": "UYARI slaytı: siyah kablolar yan yana gelmezse anakart yanabilir. Çıkıntı ters takmayı önlemeye yardımcı olur."},
+    {"week": "dn-h2", "q": "Molex konnektöründe sarı kablo kaç volt taşır?",
+     "options": ["3,3 V", "5 V", "12 V", "Toprak (0 V)"], "answer": 2,
+     "explain": "Molex: **sarı 12 V**, kırmızı 5 V, siyah toprak (ground)."},
+    {"week": "dn-h2", "q": "SATA güç konnektörü için hangisi doğrudur?",
+     "options": ["4 pinli, dikdörtgen", "15 pinli, L şeklinde", "24 pinli, çıkıntılı", "9 pinli, mavi"], "answer": 1,
+     "explain": "SATA güç konnektörü 15 pin ve L şeklindedir. Güç kaynağında yoksa Molex-SATA dönüştürücü kullanılır."},
+    {"week": "dn-h2", "q": "Slayttaki tipik değerlerin ÜST sınırlarına göre: anakart + Dual Core işlemci + RAM + HDD (7200 rpm) + CD-ROM toplam kaç watt çeker?",
+     "options": ["150 W", "180 W", "200 W", "250 W"], "answer": 2,
+     "explain": "30 + 100 + 30 + 15 + 25 = **200 W**. Ek bileşenler için pay bırakılır; sıradan kullanıcıya en az 400–500 W önerilir."},
+    {"week": "dn-h2", "q": "Aşağıdakilerden hangisi yetersiz güç durumunda görülen sorunlardan biri DEĞİLDİR?",
+     "options": ["POST tamamlanamaz, POST ekranında kalınır", "POST tamamlanır ama işletim sistemi yüklenmez", "Yük bindikçe bilgisayar sürekli yeniden başlar", "Monitörde ölü pikseller oluşur"], "answer": 3,
+     "explain": "Slayttaki üç belirti: POST'ta kalma, OS'in yüklenememesi, yük binince sürekli yeniden başlama."},
+    {"week": "dn-h2", "q": "UPS'te akünün sağladığı DC gerilimi AC gerilime dönüştüren bileşen hangisidir?",
+     "options": ["Şarj ünitesi", "Dönüştürücü (invertör)", "Akü", "Sigorta"], "answer": 1,
+     "explain": "UPS = akü (kesintide besler) + **invertör (DC → AC)** + şarj ünitesi (220 V AC → akünün depolayacağı DC)."},
+    {"week": "dn-h2", "q": "Normal şartlarda bir UPS'in devreye girme süresi ne kadar olmalıdır?",
+     "options": ["2–4 ms", "20–40 ms", "0,2–0,4 s", "2–4 s"], "answer": 0,
+     "explain": "Devreye girme zamanı 2–4 ms olmalı; daha uzun olanlar tercih edilmemeli. Satın alırken anahtarlama süresi ~2 ms."},
+    {"week": "dn-h2", "q": "Elektrikler kesikken UPS'in aküden başlatılabilmesi özelliğine ne ad verilir?",
+     "options": ["Hot swap", "Cold start", "Overclock", "Plug and play"], "answer": 1,
+     "explain": "Cold start: AC şebeke yokken sadece güç anahtarına basarak UPS'i aküden çalıştırabilme."},
+    # ───────────────────────── 3. Hafta · Anakart ─────────────────────────
+    {"week": "dn-h3", "q": "Anakartın fiziksel yapısı, boyutu, şekli, soket/slot dizilimi ve montaj delik sayısını ifade eden kavram hangisidir?",
+     "options": ["Yonga seti", "Form faktörü", "Veri yolu", "Soket tipi"], "answer": 1,
+     "explain": "Form faktörü; ATX, Micro ATX, Mini-ITX gibi standartlarla belirlenir."},
+    {"week": "dn-h3", "q": "ATX form faktörlü anakartın boyutları ve en fazla slot sayısı hangisidir?",
+     "options": ["244×244 mm – 4 slot", "305×244 mm – 7 slot", "170×170 mm – 1 slot", "325×266 mm – 4 slot"], "answer": 1,
+     "explain": "ATX 305×244 (7) · Micro ATX 244×244 (4) · Mini-ITX 170×170 (1) · BTX 325×266 (7)."},
+    {"week": "dn-h3", "q": "Tablodaki form faktörlerinden en küçüğü hangisidir?",
+     "options": ["Mini-ITX", "Nano-ITX", "Pico-ITX", "Flex ATX"], "answer": 2,
+     "explain": "Pico-ITX 100×72 mm · Nano-ITX 120×120 · Mini-ITX 170×170 · Flex ATX 229×191."},
+    {"week": "dn-h3", "q": "Mini-ITX anakart montaj noktaları C, F, H, J'dir. Bu noktalar ATX ve MicroATX listelerinde de bulunduğuna göre hangisi söylenebilir?",
+     "options": ["Mini-ITX kart ATX kasaya takılamaz", "Mini-ITX kart MicroATX ve ATX kasalara da monte edilebilir", "ATX kart Mini-ITX kasaya sığar", "Montaj noktaları form faktörüyle ilgisizdir"], "answer": 1,
+     "explain": "MicroATX: B, C, F, H, J, L, M, R, S · ATX: A, C, F, G, H, J, K, L, M → C, F, H, J ortak; küçük kart büyük kasaya takılabilir."},
+    {"week": "dn-h3", "q": "Yonga seti (chipset) için hangisi YANLIŞTIR?",
+     "options": ["Anakart üzerindeki en büyük iki çipten biridir", "Desteklenen işlemci ve bellek tipini belirler", "Donanım birimleri arasındaki veri alışverişini yönetir", "Güç kaynağının watt değerini belirler"], "answer": 3,
+     "explain": "Yonga seti anakart performansını, işlemci/bellek tipini ve çevre birimlerini belirler. Watt değeri PSU'ya aittir."},
+    {"week": "dn-h3", "q": "Kuzey-güney köprüsü mimarisinde RAM ve PCI Express x16 (ekran kartı) hangi yongaya bağlıdır?",
+     "options": ["Güney köprüsü", "Kuzey köprüsü", "Super I/O", "BIOS"], "answer": 1,
+     "explain": "Kuzey köprüsü CPU'ya FSB ile bağlıdır ve hızlı birimleri (RAM, PCIe x16) yönetir. Güney köprüsü SATA, USB, PCI, ses, BIOS gibi yavaş birimleri."},
+    {"week": "dn-h3", "q": "Diyagrama göre BIOS (flash), USB portları ve S-ATA aygıtları hangi yongaya bağlıdır?",
+     "options": ["Kuzey köprüsü", "Güney köprüsü", "Doğrudan CPU", "RAM"], "answer": 1,
+     "explain": "Southbridge: S-ATA, USB, IDE, PCI, PCIe x1, HD-Audio, Super I/O (LPC), BIOS (SPI), SMBus. Kuzeye DMI ile bağlanır."},
+    {"week": "dn-h3", "q": "İlk üretilen, siyah yuvalı, 8 ve 16 bitlik veri yolu genişliğine sahip ve artık üretilmeyen veri yolu hangisidir?",
+     "options": ["PCI", "ISA", "AGP", "PCIe"], "answer": 1,
+     "explain": "ISA (Industry Standard Architecture). PCI beyaz yuvalı, 32/64 bit."},
+    {"week": "dn-h3", "q": "PCI veri yolu için hangisi doğrudur?",
+     "options": ["Siyah yuvalı, 8/16 bit", "Beyaz yuvalı, 32/64 bit, 33/66 MHz, tak-çalıştır destekli", "Seri iletişim, x16 hat", "Sadece ekran kartı için, 266 MB/s çarpanlı"], "answer": 1,
+     "explain": "PCI: beyaz yuvalar, 32 ve 64 bit sürümler, ISA'dan büyük yuva, tak-çalıştır, 33/66 MHz; LAN, SCSI, USB kartları."},
+    {"week": "dn-h3", "q": "AGP 4x ekran kartı yuvasının bant genişliği yaklaşık ne kadardır?",
+     "options": ["266 MB/s", "532 MB/s", "1064 MB/s", "4 GB/s"], "answer": 2,
+     "explain": "AGP'de her çarpan 266 MB/s → 4 × 266 = **1064 MB/s** (8x = 2128 MB/s)."},
+    {"week": "dn-h3", "q": "AGP için hangisi YANLIŞTIR?",
+     "options": ["Paralel iletişim kullanır", "32 bitlik veri yolu genişliğine sahiptir", "0,8 V, 1,5 V ve 3,3 V standartlarında üretilir", "Seri iletişimle her hatta 250 MB/s sağlar"], "answer": 3,
+     "explain": "Seri iletişim ve hat başına 250 MB/s PCIe'nin özelliğidir. AGP paraleldir ve yerini PCIe'ye bırakmıştır."},
+    {"week": "dn-h3", "q": "Her hattı tek yön için 250 MB/s sağlayan PCIe'de x4 bir yuvanın tek yöndeki bant genişliği nedir?",
+     "options": ["250 MB/s", "1 GB/s", "2 GB/s", "4 GB/s"], "answer": 1,
+     "explain": "4 × 250 MB/s = **1000 MB/s ≈ 1 GB/s**. x16 = 16 × 250 = 4 GB/s."},
+    {"week": "dn-h3", "q": "PCIe'yi PCI'dan ayıran temel özellik hangisidir?",
+     "options": ["Paylaşımlı paralel yol kullanması", "Her aygıt için ayrı (noktadan noktaya) seri yollar kullanması", "Sadece 33 MHz'de çalışması", "Siyah yuvalara sahip olması"], "answer": 1,
+     "explain": "PCIe seri haberleşir ve PCI'daki gibi paylaşımlı yollar yerine ayrı yollar kullanır; x1, x4, x8, x16 slotlar."},
+    {"week": "dn-h3", "q": "Mavi renkli ve 9 pinli USB portu hangi sürümdür?",
+     "options": ["USB 1.1", "USB 2.0", "USB 3.0", "USB 4.0"], "answer": 2,
+     "explain": "USB 2.0 siyah (A/B 4 pin, mini/mikro 5 pin) · USB 3.0 mavi, 9 pin."},
+    {"week": "dn-h3", "q": "\"High Speed\" olarak adlandırılan USB 2.0'ın bant genişliği nedir?",
+     "options": ["12 Mbps", "480 Mbps", "5 Gbps", "10 Gbps"], "answer": 1,
+     "explain": "USB 1.1 12 Mbps · **2.0 High Speed 480 Mbps (2000)** · 3.0 SuperSpeed 5 Gbps · 3.1 10 Gbps · 3.2 20 Gbps · 4.0 40 Gbps."},
+    {"week": "dn-h3", "q": "Tabloya göre yalnızca C tipi konnektör kullanan ve 40 Gbps hıza ulaşan USB sürümü hangisidir?",
+     "options": ["USB 3.0", "USB 3.1", "USB 3.2", "USB 4.0"], "answer": 3,
+     "explain": "USB 4.0 (2019) 40 Gbps, 5 A / 20 V / 100 W, C tipi. USB 3.1 10 Gbps, 3.2 20 Gbps (ikisi de C)."},
+    {"week": "dn-h3", "q": "Aşağıdaki işlemci soketlerinden hangisi 1331 pinlidir?",
+     "options": ["LGA 1366", "LGA 2066", "AM4", "TR4"], "answer": 2,
+     "explain": "AM4 1331 pin · TR4 4094 pin · LGA soketlerde sayı adın içindedir (1366, 2066)."},
+    {"week": "dn-h3", "q": "Aşağıdakilerden hangisi slayttaki anakart seçim kriterlerinden biri DEĞİLDİR?",
+     "options": ["Soket tipi", "FSB hızı", "Bellek desteği", "Monitör çözünürlüğü"], "answer": 3,
+     "explain": "Kriterler: soket tipi, FSB hızı, bellek desteği, slot tipi ve sayısı, tümleşik kartlar, disk arayüzü (SATA / IDE-PATA)."},
+    {"week": "dn-h3", "q": "IRQ (kesme istekleri) için hangisi doğrudur?",
+     "options": ["32 hat vardır, bir aygıt birden çok IRQ kullanır", "0–15 arası 16 hat vardır; iki aygıt aynı IRQ'yu kullanırsa çakışma olur ve sistem kilitlenebilir", "IRQ'lar yalnızca USB aygıtlar içindir", "IRQ çakışması sistemi hızlandırır"], "answer": 1,
+     "explain": "Bir aygıt sadece bir IRQ kullanır; 16 IRQ hattı (0–15). Çakışma → sistem kilitlenebilir."},
+    {"week": "dn-h3", "q": "IRQ 1 hangi aygıta atanmıştır?",
+     "options": ["Sistem saati", "Klavye", "PS/2 fare", "Birinci IDE kanalı"], "answer": 1,
+     "explain": "IRQ 0 sistem saati · **IRQ 1 klavye** · IRQ 12 PS/2 fare · IRQ 14 birinci IDE."},
+    {"week": "dn-h3", "q": "IRQ 13 hangi birim tarafından kullanılır?",
+     "options": ["Gerçek zamanlı saat", "FPU (matematik işlemci)", "Disket sürücü denetleyicisi", "LPT1"], "answer": 1,
+     "explain": "IRQ 13 FPU · IRQ 8 gerçek zamanlı saat · IRQ 6 disket denetleyicisi · IRQ 7 LPT1."},
+    {"week": "dn-h3", "q": "Aygıtların doğrudan bellek ile veri alışverişi için kullandığı DMA kanalları kaç tanedir?",
+     "options": ["4 (0–3)", "8 (0–7)", "16 (0–15)", "2 (0–1)"], "answer": 1,
+     "explain": "Bir PC'de 8 DMA kanalı vardır (0–7); ses kartı, disket sürücü, yazıcı portu, ağ kartı kullanır. (IRQ ise 16 hat.)"},
 ]

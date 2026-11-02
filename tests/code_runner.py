@@ -88,6 +88,9 @@ def parse_diagnostics(lang: str, text: str) -> list[dict]:
             if sev == "note":
                 continue
             out.append({"line": int(m.group(1)), "col": int(m.group(2)), "severity": sev, "code": "", "message": m.group(4).strip()})
+        # Bağlayıcı (ld) hataları satır numarası taşımaz: "main.c:(.text+0xf): undefined reference to `topla'"
+        for m in re.finditer(r"(undefined reference to .+|multiple definition of .+)", text):
+            out.append({"line": 0, "col": 0, "severity": "error", "code": "ld", "message": m.group(1).strip()})
     else:
         for m in _CS_DIAG.finditer(text):
             out.append({"line": int(m.group(1)), "col": int(m.group(2)), "severity": m.group(3), "code": m.group(4), "message": m.group(5).strip()})

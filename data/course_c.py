@@ -1,6 +1,6 @@
-"""İşletim Sistemleri ve Güvenliği — C ile Giriş (Hafta 1 & 2).
+"""İşletim Sistemleri ve Güvenliği — C ile Giriş (Hafta 1 & 2) + İşletim Sistemine Giriş ve Derleme Zinciri (Hafta 3).
 
-Kaynaklar: Hafta01_C_Giris.pdf, Hafta02_C_Giris_II.pdf (diyagram sayfaları görsel olarak okundu).
+Kaynaklar: Hafta01_C_Giris.pdf, Hafta02_C_Giris_II.pdf, Hafta03_OS.pdf (diyagram sayfaları görsel olarak okundu).
 Kod soruları `run` alanında tam program ve `expect` alanında beklenen çıktıyla saklanır;
 tests/verify_questions.py bunları gerçek derleyicide doğrular.
 """
@@ -20,7 +20,7 @@ COURSE = {
     "icon": "⚙️",
     "color": "#f59e0b",
     "teacher": "",
-    "sources": ["Hafta01_C_Giris.pdf", "Hafta02_C_Giris_II.pdf"],
+    "sources": ["Hafta01_C_Giris.pdf", "Hafta02_C_Giris_II.pdf", "Hafta03_OS.pdf"],
     "weeks": [
         {
             "id": "c-h1",
@@ -139,6 +139,108 @@ PID benzersizdir; **PID 1 = init/systemd**; küçük PID'ler (1–1000) sistem, 
             "templates": ["c_dizi", "c_dizi_tuzak", "c_string", "c_pointer", "c_dizi_pointer", "c_deger_aktarim", "c_adres_aktarim", "c_swap",
                           "c_struct", "c_struct_dizi", "c_struct_pointer", "c_getpid", "c_process_sleep", "c_kod_okuma"],
         },
+        {
+            "id": "c-h3",
+            "title": "Hafta 3 — İşletim Sistemine Giriş + Derleme Zinciri (Kernel, User/Kernel Mode, System Call, gcc -E/-S/-c)",
+            "sources": ["Hafta03_OS.pdf"],
+            "summary": """
+**İşletim sistemi (OS):** donanım ile uygulama arasındaki **aracı**. Kaynakları yönetir (CPU, bellek, disk, ağ), uygulamalara hizmet verir (process, dosya, ağ),
+**güvenlik ve izolasyon** sağlar (process'ler birbirine karışmaz), kullanıcı arayüzü sunar (kabuk, GUI).
+**Katmanlar (yukarıdan aşağı):** Kullanıcı Uygulamaları → Kütüphaneler (libc, pthread) → Sistem Çağrıları (syscall) → Çekirdek (Kernel) → Donanım (CPU, RAM, Disk).
+**Görevleri:** process yönetimi (oluşturma, sonlandırma, senkronizasyon) · bellek yönetimi (tahsis, serbest bırakma, koruma) · dosya sistemi (dosya, klasör, izin) ·
+G/Ç yönetimi (klavye, ekran, disk, ağ) · CPU zamanlaması · güvenlik ve koruma.
+
+**Kernel (çekirdek):** OS'nin çekirdeği; açılışta yüklenen **ilk yazılım**, **sürekli bellekte** kalır, **donanıma doğrudan erişebilen tek yazılım**; Linux'ta **`vmlinuz`** dosyası.
+Görevleri: process zamanlaması, bellek yönetimi (sanal bellek, paging), dosya sistemi, cihaz sürücüleri, **sistem çağrılarını işleme**, **kesmeleri (interrupt) yönetme**.
+
+**User mode (kısıtlı):** uygulamalar burada çalışır, donanıma doğrudan erişemez, **sadece syscall ile** kernel'a istek gönderir.
+**Kernel mode (yetkili):** çekirdek burada çalışır, donanıma tam erişim. **Neden iki mod?** Güvenlik (uygulama kernel'i bozamaz) · **Kararlılık (uygulama çökse bile kernel ayakta kalır)** ·
+İzolasyon (process'ler birbirinin belleğine erişemez) · Yetkilendirme (kritik işlemler sadece kernel'da).
+
+**System call:** uygulamanın kernel'dan hizmet istemesinin yolu — **kontrollü kapı: user mode → kernel mode**. libc bu çağrıları sarmalar; syscall = uygulama ile kernel arasındaki sözleşme.
+`open/read/write/close` (dosya) · **`fork`** yeni process · **`exec`** programı değiştir · **`wait`** child'ı bekle · `exit` sonlandır · **`brk`** heap büyüt · **`mmap`** bellek haritala · `socket/bind/listen` (ağ).
+**printf arka planda:** `printf()` → **libc** → **`write` syscall** → kernel mod geçişi → kernel `write()` → terminale yaz.
+
+**Kernel mimarileri:** **Monolithic** — tüm servisler aynı adres alanında (**Linux**): hızlı ama bir hata tüm sistemi çökertebilir ·
+**Microkernel** — minimal kernel, servisler ayrı process'te (**Minix**): güvenli ama daha yavaş · **Hybrid** — karma (**Windows, macOS**).
+
+**Derleme zinciri (4 adım):**
+1. **Ön işleme** `gcc -E merhaba.c -o merhaba.i` (cpp) — `#include` içerikleri eklenir: **5 satırlık kod → 800+ satır**.
+2. **Derleme** `gcc -S merhaba.i -o merhaba.s` (cc1) — **assembly** üretir. `printf("Merhaba!\\n")` assembly'de **`call puts@PLT`** olur (sabit metin + `\\n` → derleyici puts'a çevirir).
+   `int x = 5; x = x + 3;` → `movl $5, -4(%rbp)` · `movl -4(%rbp), %eax` · `addl $3, %eax` · `movl %eax, -4(%rbp)`.
+3. **Assembly** `gcc -c merhaba.s -o merhaba.o` (as) — **obje dosyası**: `file` → *ELF 64-bit LSB **relocatable***. `nm merhaba.o` → **`U puts`** (tanımsız sembol) · **`T main`** (.text'te tanımlı).
+   Obje dosyası: makine kodu + semboller + tanımsız semboller + yeniden konumlandırma bilgisi → **çalıştırılabilir DEĞİL, printf bağlı değil**.
+4. **Bağlama (linking)** `gcc merhaba.o -o merhaba` (**ld**) — merhaba.o + libc.so + crt0.o birleşir → çalıştırılabilir (*ELF 64-bit LSB executable*).
+Tek adımda: `gcc merhaba.c -o merhaba`.
+
+**Linker hataları:** `undefined reference to 'topla'` → fonksiyon **tanımlı değil** veya kütüphane eksik (pthread için `-pthread`) · `multiple definition of 'yardimci'` → aynı sembol iki dosyada tanımlı.
+
+**ELF formatı:** **ELF Header** (mimari, tip) · **.text** (makine kodu) · **.data** (başlatılmış global değişkenler) · **.bss** (başlatılmamış global değişkenler) · **Sembol tablosu** (main, printf…).
+`file` (tür), **`ldd`** (bağlı paylaşımlı kütüphaneler: linux-vdso.so.1, **libc.so.6**, ld-linux-x86-64.so.2), `nm` (semboller; `_start`, `main`), `objdump` ile incelenir.
+**Loader:** Disk (./program, ELF) → **exec()** → bellek (kod yüklendi, veri hazır) → **process (PID, çalışıyor)**.
+**strace** sistem çağrılarını izler: `execve(...)` → `brk` → `mmap` → **`write(1, "Merhaba, dünya!\\n", 17) = 17`** (1 = stdout, dönen değer yazılan bayt) → `exit_group(0)`.
+*"Bir program çalıştırmak, bir dizi sistem çağrısı yapmaktır."*
+
+**Linux gözlem komutları:** `uname -a` kernel/sistem bilgisi · `ps -ef` tüm process'ler (statik; UID PID PPID CMD — PID 1 `/sbin/init`) · `top` canlı izleme ·
+`free -h` bellek · `df -h` disk ('Mounted on' = bağlandığı yer) · `lsblk` blok cihazlar · `uptime` ne kadar süredir açık.
+
+**Yaygın hatalar:** `command not found: gcc` → `sudo apt install build-essential` · `undefined reference to X` → tanım/kütüphane eksik ·
+`cannot execute binary file` → yanlış mimari ya da **obje dosyasını çalıştırıyorsun** · `No such file or directory` → **`./` olmadan** çalıştırıyorsun → `./program`.
+""",
+            "concepts": [
+                ("Kernel", "Donanıma doğrudan erişebilen tek yazılım; Linux'ta vmlinuz."),
+                ("User / Kernel mode", "Kısıtlı uygulama modu / donanıma tam erişimli yetkili mod."),
+                ("System call", "User mode'dan kernel mode'a kontrollü kapı (open, read, write, fork…)."),
+                ("libc", "printf gibi fonksiyonlarla syscall'ları sarmalayan C kütüphanesi."),
+                (".o (obje)", "ELF relocatable; tanımsız semboller içerir, tek başına çalışmaz."),
+                ("ld (linker)", "Obje dosyalarını ve kütüphaneleri birleştirip çalıştırılabilir üretir."),
+                ("ELF", "Linux çalıştırılabilir dosya formatı: header, .text, .data, .bss, sembol tablosu."),
+                ("strace", "Bir programın yaptığı sistem çağrılarını listeler."),
+            ],
+            "must": [
+                "Kernel = donanıma doğrudan erişen tek yazılım; Linux'ta vmlinuz",
+                "User mode donanıma erişemez → syscall ile kernel'a istek",
+                "printf → libc → write syscall → kernel → ekran",
+                "fork = yeni process · exec = programı değiştir · wait = child'ı bekle · brk = heap büyüt",
+                "Monolithic (Linux) · Microkernel (Minix) · Hybrid (Windows, macOS)",
+                "gcc -E → .i (ön işleme, 800+ satır) · -S → .s (assembly) · -c → .o (obje) · gcc → çalıştırılabilir",
+                "nm: U = tanımsız sembol, T = .text'te tanımlı",
+                "undefined reference = linker hatası (tanım ya da kütüphane yok)",
+                ".data başlatılmış, .bss başlatılmamış global değişkenler",
+                "ldd = paylaşımlı kütüphaneler · strace = sistem çağrıları",
+            ],
+            "cheat": [
+                {"title": "Derleme zinciri", "columns": ["Adım", "Komut", "Araç", "Çıktı"], "rows": [
+                    ["1. Ön işleme", "gcc -E merhaba.c -o merhaba.i", "cpp", ".i (800+ satır)"],
+                    ["2. Derleme", "gcc -S merhaba.i -o merhaba.s", "cc1", ".s (assembly)"],
+                    ["3. Assembly", "gcc -c merhaba.s -o merhaba.o", "as", ".o (ELF relocatable)"],
+                    ["4. Bağlama", "gcc merhaba.o -o merhaba", "ld", "ELF executable"]]},
+                {"title": "Yaygın sistem çağrıları", "columns": ["Syscall", "İş"], "rows": [
+                    ["open / close", "Dosya aç / kapat"], ["read / write", "Dosyadan oku / dosyaya yaz"], ["fork", "Yeni process oluştur"],
+                    ["exec", "Programı değiştir"], ["wait", "Child process'i bekle"], ["exit", "Process'i sonlandır"],
+                    ["brk", "Heap büyüt"], ["mmap", "Bellek haritala"], ["socket / bind / listen", "Ağ soketi aç / porta bağla / bağlantı bekle"]]},
+                {"title": "İnceleme ve gözlem komutları", "columns": ["Komut", "Ne gösterir?"], "rows": [
+                    ["file", "Dosya türü (relocatable / executable)"], ["nm", "Semboller (U tanımsız, T kod)"], ["ldd", "Bağlı paylaşımlı kütüphaneler"],
+                    ["strace", "Sistem çağrıları"], ["uname -a", "Kernel ve sistem bilgisi"], ["ps -ef", "Tüm process'ler (statik)"], ["top", "Canlı process izleme"],
+                    ["free -h", "Bellek kullanımı"], ["df -h", "Disk kullanımı"], ["lsblk", "Blok cihazlar"], ["uptime", "Açık kalma süresi"]]},
+                {"title": "Kernel mimarileri", "columns": ["Mimari", "Yapı", "Örnek", "Artı / eksi"], "rows": [
+                    ["Monolithic", "Tüm servisler aynı adres alanında", "Linux", "Hızlı / bir hata tüm sistemi çökertebilir"],
+                    ["Microkernel", "Minimal kernel, servisler ayrı process'te", "Minix", "Güvenli / daha yavaş"],
+                    ["Hybrid", "Karma yaklaşım", "Windows, macOS", "—"]]},
+                {"title": "Yaygın hatalar", "columns": ["Mesaj", "Neden / çözüm"], "rows": [
+                    ["command not found: gcc", "Derleyici yok → sudo apt install build-essential"],
+                    ["undefined reference to X", "Tanım ya da kütüphane eksik (pthread → -pthread)"],
+                    ["cannot execute binary file", "Yanlış mimari ya da .o dosyası çalıştırılıyor"],
+                    ["No such file or directory", "./ olmadan çalıştırılıyor → ./program"]]},
+            ],
+            "images": [("c_os_katmanlari.jpg", "İşletim sistemi katmanları (Hafta03 s.4)"),
+                       ("c_user_kernel_mode.jpg", "User mode (kısıtlı) ve kernel mode (yetkili); syscall geçişi (s.8)"),
+                       ("c_printf_syscall.jpg", "printf çağrısı arka planda: libc → write syscall → kernel → terminal (s.12)"),
+                       ("c_derleme_zinciri.jpg", "Derleme zinciri: .c → .i → .s → .o → çalıştırılabilir (s.15)"),
+                       ("c_elf_formati.jpg", "ELF dosya formatı: header, .text, .data, .bss, sembol tablosu (s.25)"),
+                       ("c_strace.jpg", "strace ./merhaba çıktısı (s.28)")],
+            "templates": ["c_derleme_zinciri", "c_assembly_karsilik", "c_write_syscall", "c_elf_bolumler", "c_linker_hata"],
+        },
     ],
     "flashcards": [
         ("int/int sonucu?", "int — ondalık kısım atılır (10/3 = 3)."),
@@ -159,6 +261,18 @@ PID benzersizdir; **PID 1 = init/systemd**; küçük PID'ler (1–1000) sistem, 
         ("PID 1 kimdir?", "init / systemd."),
         ("Program ile process farkı?", "Program diskteki dosya; process çalışan programın OS'teki karşılığı."),
         ("Buffer overflow neden olur?", "C dizi sınırlarını kontrol etmediği için sınır dışına yazılır."),
+        ("Donanıma doğrudan erişebilen tek yazılım?", "Kernel (Linux'ta vmlinuz)."),
+        ("User mode'daki uygulama donanıma nasıl erişir?", "Doğrudan erişemez; sistem çağrısı (syscall) ile kernel'dan ister."),
+        ("printf arka planda hangi syscall'a dönüşür?", "write (printf → libc → write → kernel → ekran)."),
+        ("fork / exec / wait?", "Yeni process oluştur / programı değiştir / child'ı bekle."),
+        ("Monolithic, microkernel, hybrid örnekleri?", "Linux · Minix · Windows/macOS."),
+        ("gcc -E / -S / -c çıktıları?", ".i (ön işlenmiş) · .s (assembly) · .o (obje)."),
+        ("nm çıktısında 'U puts' ne demek?", "puts tanımsız (undefined) sembol; bağlamada libc'den çözülür."),
+        ("'undefined reference to topla' hangi aşamanın hatası?", "Bağlama (linker); topla tanımlı değil ya da kütüphane eksik."),
+        (".data ile .bss farkı?", ".data başlatılmış, .bss başlatılmamış global değişkenler."),
+        ("ldd ne gösterir?", "Programın bağlı olduğu paylaşımlı kütüphaneler (libc.so.6 …)."),
+        ("strace'te write(1, …) içindeki 1?", "Dosya tanımlayıcı 1 = stdout (standart çıktı)."),
+        ("Bellek / disk kullanımını gösteren komutlar?", "free -h / df -h."),
     ],
 }
 
@@ -309,4 +423,90 @@ QUESTIONS = [
     {"week": "c-h2", "q": "Bir process'in bellek haritasında `malloc` ile ayrılan alan hangi bölgededir?",
      "options": ["Stack", "Heap", "Kod (.text)", "Veri (.data/.bss)"], "answer": 1,
      "explain": "Stack: yerel değişkenler ve fonksiyon çağrıları · **Heap: malloc/new** · Veri: global/static · Kod: makine kodu."},
+    # ───────────────────────── Hafta 3 · İşletim Sistemine Giriş + Derleme Zinciri ─────────────────────────
+    {"week": "c-h3", "q": "Aşağıdakilerden hangisi işletim sisteminin görevlerinden biri DEĞİLDİR?",
+     "options": ["Process yönetimi", "Bellek yönetimi", "Kaynak kodu makine koduna derlemek", "G/Ç (I/O) yönetimi"], "answer": 2,
+     "explain": "OS görevleri: process, bellek, dosya sistemi, G/Ç, CPU zamanlaması, güvenlik. Derleme işini gcc gibi derleyiciler yapar, OS değil."},
+    {"week": "c-h3", "q": "Kernel (çekirdek) için hangisi YANLIŞTIR?",
+     "options": ["Bilgisayar açılırken yüklenen ilk yazılımdır", "Sürekli bellekte kalır", "Donanıma doğrudan erişebilen tek yazılımdır", "Kullanıcı uygulamaları gibi user mode'da çalışır"], "answer": 3,
+     "explain": "Kernel **kernel mode**'da (yetkili) çalışır. Uygulamalar user mode'dadır. Linux'ta kernel dosyası `vmlinuz`'dur."},
+    {"week": "c-h3", "q": "Linux'ta kernel hangi dosyadır?",
+     "options": ["/sbin/init", "vmlinuz", "libc.so.6", "a.out"], "answer": 1,
+     "explain": "Slayt: \"Linux'ta 'vmlinuz' dosyasıdır\". /sbin/init PID 1'dir, libc.so.6 C kütüphanesidir."},
+    {"week": "c-h3", "q": "User mode'da çalışan bir uygulama diske yazmak istediğinde ne olur?",
+     "options": ["Disk denetleyicisine doğrudan yazar", "Sistem çağrısı (syscall) ile kernel'dan ister; kernel kernel mode'da yazar", "BIOS'u çağırır", "Önce root kullanıcısına geçer"], "answer": 1,
+     "explain": "User mode donanıma doğrudan erişemez. Syscall user mode → kernel mode geçişini sağlayan kontrollü kapıdır."},
+    {"week": "c-h3", "q": "\"Bir uygulama çökse bile kernel ayakta kalır\" ifadesi iki mod (user/kernel) kullanmanın hangi gerekçesidir?",
+     "options": ["Güvenlik", "Kararlılık", "İzolasyon", "Yetkilendirme"], "answer": 1,
+     "explain": "Güvenlik: uygulama kernel'i bozamaz · **Kararlılık: uygulama çökse bile kernel ayakta** · İzolasyon: process'ler birbirinin belleğine erişemez · Yetkilendirme: kritik işler sadece kernel'da."},
+    {"week": "c-h3", "q": "Yeni bir process oluşturan sistem çağrısı hangisidir?",
+     "options": ["exec()", "fork()", "wait()", "brk()"], "answer": 1,
+     "explain": "fork yeni process oluşturur · exec çalışan programı değiştirir · wait child'ı bekler · brk heap'i büyütür."},
+    {"week": "c-h3", "q": "Heap alanını büyütmek için kullanılan sistem çağrısı hangisidir?",
+     "options": ["mmap()", "brk()", "socket()", "exit()"], "answer": 1,
+     "explain": "brk() heap büyütür; mmap() bellek haritalar. (malloc arka planda bunları kullanır.)"},
+    {"week": "c-h3", "q": "printf(\"Merhaba\") çağrısının arka plandaki sırası hangisidir?",
+     "options": ["printf → kernel → libc → write → ekran", "printf → libc → write syscall → kernel (mod geçişi) → ekran", "printf → BIOS → ekran kartı", "printf → write → libc → ekran"], "answer": 1,
+     "explain": "Uygulama printf() → kütüphane libc → syscall (write) → kernel mod geçişi → kernel write() → terminale yaz."},
+    {"week": "c-h3", "q": "Tüm servislerin aynı adres alanında çalıştığı, hızlı ama bir hatada tüm sistemin çökebildiği kernel mimarisi ve örneği hangisidir?",
+     "options": ["Microkernel – Minix", "Monolithic – Linux", "Hybrid – Windows", "Exokernel – macOS"], "answer": 1,
+     "explain": "Monolithic (Linux) hızlı ama kırılgan · Microkernel (Minix) güvenli ama yavaş · Hybrid (Windows, macOS) karma."},
+    {"week": "c-h3", "q": "Microkernel mimarisi için hangisi doğrudur?",
+     "options": ["Tüm servisler kernel içindedir", "Minimal kernel; servisler ayrı process'lerde çalışır, güvenli ama daha yavaştır", "Windows ve macOS microkernel'dir", "En hızlı mimaridir"], "answer": 1,
+     "explain": "Microkernel: minimal kernel, servisler ayrı process'te (Minix). Güvenli ama daha yavaş."},
+    {"week": "c-h3", "q": "`gcc -E merhaba.c -o merhaba.i` komutu hangi adımı yapar ve neden çıktı 800+ satırdır?",
+     "options": ["Derleme; assembly kodu uzundur", "Ön işleme; #include <stdio.h> içeriği dosyaya eklenir", "Bağlama; libc eklenir", "Assembly; makine kodu üretilir"], "answer": 1,
+     "explain": "-E sadece ön işlemciyi (cpp) çalıştırır: #include'lar açılır, makrolar yerleşir. 5 satırlık kod 800+ satıra çıkar."},
+    {"week": "c-h3", "q": "Derleme zincirinin doğru sırası hangisidir?",
+     "options": [".c → .s → .i → .o → çalıştırılabilir", ".c → .i → .s → .o → çalıştırılabilir", ".c → .o → .i → .s → çalıştırılabilir", ".c → .i → .o → .s → çalıştırılabilir"], "answer": 1,
+     "explain": "Ön işleme (.i) → derleme (.s, assembly) → assembly (.o, obje) → bağlama (ELF çalıştırılabilir). Tek adımda: gcc merhaba.c -o merhaba."},
+    {"week": "c-h3", "q": "Assembly (.s) dosyası üreten gcc seçeneği hangisidir?",
+     "options": ["-E", "-S", "-c", "-o"], "answer": 1,
+     "explain": "-E → .i · **-S → .s** · -c → .o · -o çıktı dosyasının adını belirler."},
+    {"week": "c-h3", "q": "`file merhaba.o` komutu \"ELF 64-bit LSB relocatable\" çıktısı veriyor. Bu dosya için hangisi doğrudur?",
+     "options": ["Doğrudan ./merhaba.o ile çalıştırılabilir", "Obje dosyasıdır; printf gibi semboller henüz bağlanmamıştır, çalıştırılabilir değildir", "Ön işlenmiş C kodudur", "Paylaşımlı kütüphanedir"], "answer": 1,
+     "explain": "Obje dosyası: makine kodu + semboller + tanımsız semboller + yeniden konumlandırma bilgisi. Linker (ld) bağlamadan çalışmaz."},
+    {"week": "c-h3", "q": "`nm merhaba.o` çıktısındaki \"U puts\" satırı ne anlama gelir?",
+     "options": ["puts kullanılmamış (unused)", "puts tanımsız (undefined) sembol; bağlama aşamasında libc'den çözülecek", "puts kullanıcı (user) fonksiyonudur", "puts .text bölümünde tanımlı"], "answer": 1,
+     "explain": "nm'de **U = undefined**, **T = text** (kodda tanımlı, örn. `T main`). puts libc'dedir; linker bağlar."},
+    {"week": "c-h3", "q": "Kodda `printf(\"Merhaba!\\n\");` yazılmasına rağmen assembly'de neden `call puts@PLT` görülür?",
+     "options": ["printf ve puts aynı fonksiyondur", "Sabit, format belirteci olmayan ve \\n ile biten metni derleyici daha basit olan puts'a çevirir", "Ön işlemci printf'i siler", "Linker printf'i puts ile değiştirir"], "answer": 1,
+     "explain": "gcc optimizasyonu: biçimlendirme gerektirmeyen ve satır sonu ile biten printf çağrısını puts ile değiştirir (puts zaten \\n ekler)."},
+    {"week": "c-h3", "q": "Assembly'deki `addl $3, %eax` satırı C'deki hangi işleme karşılık gelir?",
+     "options": ["x = 3", "eax register'ına 3 ekler (x = x + 3'ün toplama adımı)", "eax'i 3 ile çarpar", "3'ü belleğe yazar"], "answer": 1,
+     "explain": "`int x = 5; x = x + 3;` → movl $5,-4(%rbp) (x=5) · movl -4(%rbp),%eax (eax=x) · **addl $3,%eax (eax+=3)** · movl %eax,-4(%rbp) (x=eax)."},
+    {"week": "c-h3", "q": "Aşağıdaki kod derlenmeye (`gcc main.c -o main`) çalışıldığında ne olur?", "lang": "c",
+     "code": "#include <stdio.h>\n\nint topla(int a, int b);   // sadece prototip\n\nint main() {\n    printf(\"%d\\n\", topla(2, 3));\n    return 0;\n}",
+     "options": ["5 yazar", "Derleme aşaması geçer ama bağlamada 'undefined reference to topla' hatası alınır", "Ön işleme hatası alınır", "Çalışma zamanında segmentation fault olur"], "answer": 1,
+     "explain": "Prototip derleyiciyi tatmin eder ama topla'nın **tanımı** hiçbir obje dosyasında yok → linker (ld) hatası: undefined reference to 'topla'.",
+     "run": "#include <stdio.h>\n\nint topla(int a, int b);\n\nint main() {\n    printf(\"%d\\n\", topla(2, 3));\n    return 0;\n}\n", "expect_error": True},
+    {"week": "c-h3", "q": "`gcc a.c b.c -o prog` komutunda \"b.o: multiple definition of 'yardimci'\" hatası alınıyor. Neden?",
+     "options": ["yardimci hiç tanımlanmamış", "yardimci fonksiyonu hem a.c'de hem b.c'de tanımlanmış (çift tanım)", "b.c'de noktalı virgül eksik", "-pthread unutulmuş"], "answer": 1,
+     "explain": "Linker aynı sembolün iki tanımını birleştiremez. Çözüm: tanımı tek dosyada bırak, diğerinde yalnızca prototip kullan."},
+    {"week": "c-h3", "q": "ELF dosyasında başlatılmamış global değişkenler hangi bölümde tutulur?",
+     "options": [".text", ".data", ".bss", "ELF Header"], "answer": 2,
+     "explain": ".text makine kodu · .data **başlatılmış** globaller · **.bss başlatılmamış** globaller · sembol tablosu main/printf gibi semboller."},
+    {"week": "c-h3", "q": "Bir programın bağlı olduğu paylaşımlı kütüphaneleri (libc.so.6 vb.) listeleyen komut hangisidir?",
+     "options": ["nm", "ldd", "file", "strace"], "answer": 1,
+     "explain": "ldd → linux-vdso.so.1, libc.so.6, ld-linux-x86-64.so.2. nm semboller, file dosya türü, strace sistem çağrıları."},
+    {"week": "c-h3", "q": "strace çıktısındaki `write(1, \"Merhaba, dünya!\\n\", 17) = 17` satırında 1 ve sondaki 17 neyi ifade eder?",
+     "options": ["1 = PID, 17 = süre", "1 = stdout dosya tanımlayıcısı, 17 = yazılan bayt sayısı", "1 = satır numarası, 17 = karakter kodu", "1 = başarı, 17 = hata kodu"], "answer": 1,
+     "explain": "fd 1 standart çıktıdır. \"Merhaba, dünya!\\n\" UTF-8'de 17 bayttır ('ü' 2 bayt). Syscall yazılan bayt sayısını döndürür."},
+    {"week": "c-h3", "q": "Aşağıdaki programın çıktısı nedir?", "lang": "c",
+     "code": "#include <unistd.h>\n\nint main() {\n    write(1, \"Merhaba\\n\", 3);\n    write(1, \"\\n\", 1);\n    return 0;\n}",
+     "options": ["Merhaba", "Mer", "Merhaba\\n\\n", "Derleme hatası (printf yok)"], "answer": 1,
+     "explain": "write'ın üçüncü parametresi yazılacak bayt sayısıdır: yalnızca ilk 3 bayt (\"Mer\") yazılır, ardından satır sonu.",
+     "run": "#include <unistd.h>\n\nint main() {\n    write(1, \"Merhaba\\n\", 3);\n    write(1, \"\\n\", 1);\n    return 0;\n}\n", "expect": "Mer"},
+    {"week": "c-h3", "q": "Çalıştırılabilir dosyayı diskten belleğe yükleyip process hâline getiren mekanizma hangisidir?",
+     "options": ["Linker – ld", "Loader – exec()", "Ön işlemci – cpp", "Assembler – as"], "answer": 1,
+     "explain": "Loader: Disk (./program, ELF) → exec() → RAM (kod yüklendi, veri hazır) → Process (PID, çalışıyor)."},
+    {"week": "c-h3", "q": "Linux'ta canlı (sürekli güncellenen) process izleme için kullanılan komut hangisidir?",
+     "options": ["ps -ef", "top", "df -h", "uname -a"], "answer": 1,
+     "explain": "top canlı izler; ps -ef statik liste verir; df -h disk, free -h bellek, uname -a kernel bilgisi."},
+    {"week": "c-h3", "q": "Disk kullanımını ve dosya sistemlerinin bağlandığı yeri (Mounted on) gösteren komut hangisidir?",
+     "options": ["free -h", "df -h", "lsblk", "uptime"], "answer": 1,
+     "explain": "df -h: Filesystem, Size, Used, Avail, Use%, Mounted on. free -h bellek kullanımını gösterir."},
+    {"week": "c-h3", "q": "`gcc merhaba.c -o merhaba` başarılı oldu ama `merhaba` yazınca program çalışmıyor. Slayttaki çözüm nedir?",
+     "options": ["sudo apt install build-essential", "Programı ./merhaba şeklinde çalıştırmak", "-pthread eklemek", "merhaba.o dosyasını çalıştırmak"], "answer": 1,
+     "explain": "Bulunduğun dizin PATH'te değildir; çalıştırılabilir dosya `./program` ile çağrılır. 'command not found: gcc' ise build-essential kurulumu gerektirir."},
 ]
