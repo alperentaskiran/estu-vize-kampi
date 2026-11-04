@@ -1,10 +1,10 @@
-"""Bilgisayar Ağları (BBO1001, Cisco Networking Basics / BNET) — 1.–6. hafta.
+"""Bilgisayar Ağları (BBO1001, Cisco Networking Basics / BNET) — 1.–7. hafta.
 
 Kaynaklar: hafta_1_ag_dunyasi_v4.pdf, hafta_2_kablosuz_ve_ev_agi.pdf,
 hafta_3_katmanli_modeller_ve_ag_ortamlari.pdf (görüntü tabanlı), packet tracer PDU uygulaması.docx,
 Ağ_Modellerinde_Kapsülleme_ve_Dekapsülleme.png, hafta4_Erişim Katmanı_MAC Address_Switch (görüntü tabanlı, 44 slayt),
 hafta_5_ipv4_ipv6_ve_subnetting.pdf, Hafta6_DHCP_ve_NAT_ile_Ağ_Adresleme v1.pdf (görüntü tabanlı),
-Hafta6_bilgisayar_aglari_dhcp_nat_sunumu_V2.pdf.
+Hafta6_bilgisayar_aglari_dhcp_nat_sunumu_V2.pdf, hafta_7_arp_ve_routing.pdf.
 """
 
 COURSE = {
@@ -14,7 +14,7 @@ COURSE = {
     "icon": "🌐",
     "color": "#34d399",
     "teacher": "",
-    "sources": ["hafta_1…hafta_5 PDF'leri", "Hafta6 DHCP/NAT (v1 + V2)", "hafta4 Erişim Katmanı", "packet tracer PDU uygulaması.docx",
+    "sources": ["hafta_1…hafta_5 PDF'leri", "Hafta6 DHCP/NAT (v1 + V2)", "hafta_7 ARP ve Routing", "hafta4 Erişim Katmanı", "packet tracer PDU uygulaması.docx",
                 "Ağ_Modellerinde_Kapsülleme_ve_Dekapsülleme.png"],
     "weeks": [
         {
@@ -382,6 +382,104 @@ Router(config-if)# ip nat outside
                        ("ag_dhcp_cli.jpg", "Cisco DHCPv4 yapılandırması (s.11)"), ("ag_pat_cli.jpg", "Cisco PAT (NAT Overload) yapılandırması (s.13)")],
             "templates": [],
         },
+        {
+            "id": "ag-h7",
+            "title": "7. Hafta — ARP (Adres Çözümleme) ve Ağlar Arası Yönlendirme (Routing)",
+            "sources": ["hafta_7_arp_ve_routing.pdf (slaytlarda '8. Hafta'; Cisco BNET Modül 13 & 14)"],
+            "summary": """
+**IP ve MAC'in rolleri:**
+* **Katman 3 – mantıksal IP:** paketin kaynaktan **nihai hedefe (end-to-end)** ulaşmasını sağlar; hiyerarşik (ağ + host kısmı); IPv4 32 bit / 4 oktet, IPv6 128 bit / 8 hekstet;
+  cihaz **başka ağa taşınınca değişir**. Analoji: mektuptaki alıcı adresi / posta kodu.
+* **Katman 2 – fiziksel MAC:** çerçevenin **yerel segmentte cihazdan cihaza (hop-by-hop)** teslimi; **sadece aynı LAN içinde** geçerli; **48 bit (6 oktet, hex)**, NIC'e üreticide yazılır (**burned-in**);
+  **konumla değişmez**. Analoji: T.C. kimlik numarası / parmak izi.
+
+**ARP (Address Resolution Protocol):** gönderici hedef IP'yi bilir ama Ethernet çerçevesi için **hedef MAC** şarttır → **bilinen IP'den bilinmeyen MAC'i bulma**.
+* **ARP Request:** **BROADCAST** (FF:FF:FF:FF:FF:FF) — "192.168.1.50 kimdeyse MAC adresini söylesin!" → tüm cihazlara gider.
+* **ARP Reply:** **UNICAST** — sadece ilgili cihaz kendi MAC'ini kaynağa bildirir.
+* **ARP tablosu (ARP cache):** öğrenilen IP-MAC eşleşmeleri **RAM**'de belirli bir süre tutulur (sürekli broadcast yapmamak için). **`arp -a`** görüntüle · **`arp -d`** sil/temizle (`arp -d *` hepsini).
+* EtherType **0x0806 = ARP** (4. haftadan).
+
+**IPv6 — Neighbor Discovery (ND):** IPv6'da **broadcast YOKTUR**; ARP yerine **ICMPv6 Neighbor Discovery** kullanılır; broadcast yerine **Solicited-Node Multicast** grupları.
+* **Neighbor Solicitation (NS) — ICMPv6 Tip 135:** ARP Request karşılığı; hedefin dinlediği solicited-node multicast adresine gider.
+* **Neighbor Advertisement (NA) — ICMPv6 Tip 136:** ARP Reply karşılığı; **unicast** olarak doğrudan isteyene gider. Bilgi **IPv6 Neighbor Table** (komşuluk tablosu) içine yazılır.
+
+**Yerel mi, uzak mı? (Default gateway rolü):** kaynak cihaz **hedef IP ile kendi subnet mask'ini AND'ler**.
+* **Aynı yerel ağ:** ARP **doğrudan hedef cihazın IP'si** için yapılır → çerçevenin hedef MAC'i **alıcı cihazın MAC'i** → iletişim switch üzerinden doğrudan.
+* **Uzak ağ:** paket doğrudan uzak hedefe atılamaz → **varsayılan ağ geçidine (default gateway / router)** gönderilir. ARP **hedef için DEĞİL, router'ın LAN arayüz MAC'i için** yapılır.
+  Çerçevenin hedef MAC'ine **router MAC** yazılır, **hedef IP değişmez**. (Router her hopta MAC'leri yeniler; IP uçtan uca aynı kalır — NAT hariç.)
+
+**Router paket iletim adımları:**
+1. **De-capsulation:** gelen Ethernet çerçevesini alır, **FCS** denetler, Katman 2 başlığını söker → IP paketi açığa çıkar.
+2. **IP inceleme:** hedef IP'ye bakar, **TTL'yi 1 azaltır** (**TTL 0 olursa paket düşürülür**).
+3. **Rota arama:** routing table'da hedefe uyan **en spesifik rotayı** arar (**Longest Prefix Match**), çıkış arayüzünü belirler.
+4. **Re-capsulation:** çıkış arayüzünün Katman 2 çerçevesiyle (**yeni kaynak/hedef MAC**) tekrar kapsülleyip sonraki hopa iletir.
+
+**Routing table kodları (`show ip route`):**
+**C** (Directly Connected) — arayüze doğrudan bağlı ağ; arayüz IP + maske verilip açılınca otomatik ·
+**L** (Local) — router arayüzünün kendi **/32** IP'si ·
+**S** (Static) — yönetici tarafından elle yazılan rota (`ip route ...`) ·
+**D / O** (Dynamic) — EIGRP (D) / OSPF (O), BGP gibi protokollerle otomatik öğrenilen ·
+**S\\*** (Default Route / **Gateway of Last Resort**) — bilinmeyen tüm dış trafik için **0.0.0.0/0**.
+
+**Broadcast domain'i bölmek:** switch'ler **çatışma alanını (collision domain) port bazında ayırır** ama **broadcast domain'i BÖLEMEZ** — ARP/DHCP broadcast'leri tüm portlara gider;
+binlerce cihazlık tek LAN'da **broadcast storm** oluşur, ağ kilitlenir. **Router'lar broadcast domain'i fiziksel olarak BÖLER**; router arayüzü broadcast'i **asla diğer ağa geçirmez**.
+Büyük ağ küçük, yönetilebilir LAN segmentlerine bölünür → güvenlik, performans, trafik yönetimi.
+
+**Vaka – ARP Spoofing / Poisoning:** finans departmanında internet kesildi, ağ yavaşladı. `arp -a` → gateway 192.168.1.1'in karşısında router yerine **kaçak bilgisayarın MAC'i**.
+Saldırgan **sahte ARP Reply** yayarak kendini router gibi tanıtmış, trafiği üzerine çekmiş (**Man-in-the-Middle**).
+Çözüm: switch'lerde **Dynamic ARP Inspection (DAI)** ve **DHCP Snooping**; ARP tabloları `arp -d *` ile temizlendi.
+
+**Packet Tracer Lab 1 (ARP):** 3 PC (192.168.1.10/.20/.30, /24) + 2960 switch, düz kablo. PC0'da `arp -a` → **boş**. Simulation modu (ARP + ICMP filtresi), `ping 192.168.1.20` →
+**önce ARP, sonra ICMP** paketi; ARP broadcast tüm PC'lere gider, sadece PC1 unicast yanıt verir; PC0'ın `arp -a` tablosuna PC1'in MAC'i eklenir.
+**Lab 2 (statik routing):** LAN1 192.168.10.0/24 — R1 — **10.0.0.0/30** — R2 — LAN2 192.168.20.0/24.
+R1 g0/0/0 `192.168.10.1 255.255.255.0`, g0/0/1 `10.0.0.1 255.255.255.252` · R2 g0/0/0 `192.168.20.1`, g0/0/1 `10.0.0.2` · her arayüzde **`no shutdown`**.
+Rotalar: **R1 `ip route 192.168.20.0 255.255.255.0 10.0.0.2`** · **R2 `ip route 192.168.10.0 255.255.255.0 10.0.0.1`** → `show ip route`'ta **S**; 192.168.10.10'dan 192.168.20.10'a ping.
+
+*Gelecek hafta: TCP/UDP, port numaraları, DNS, HTTP/HTTPS, FTP, SSH/Telnet, `ipconfig`, `ping`, `tracert`, `nslookup`, `netstat`.*
+""",
+            "concepts": [
+                ("ARP", "Bilinen IPv4 adresinden bilinmeyen MAC adresini bulur; istek broadcast, yanıt unicast."),
+                ("ARP cache", "IP-MAC eşleşmelerinin RAM'de tutulduğu tablo; arp -a / arp -d."),
+                ("NS / NA", "IPv6 Neighbor Solicitation (Tip 135) / Neighbor Advertisement (Tip 136)."),
+                ("Default gateway", "Uzak ağa giden paketlerin gönderildiği router arayüzü."),
+                ("TTL", "Her router'da 1 azalır; 0 olunca paket düşürülür."),
+                ("Longest Prefix Match", "Hedefe uyan en uzun (en spesifik) prefix'li rotanın seçilmesi."),
+                ("Gateway of Last Resort", "Varsayılan rota S* 0.0.0.0/0."),
+                ("ARP spoofing", "Sahte ARP Reply ile kendini router gibi tanıtıp trafiği çekme (MitM)."),
+            ],
+            "must": [
+                "IP = uçtan uca, ağ değişince değişir · MAC = hop-by-hop, aynı LAN'da geçerli, 48 bit, değişmez",
+                "ARP Request = broadcast FF:FF:FF:FF:FF:FF · ARP Reply = unicast",
+                "arp -a göster · arp -d sil · ARP tablosu RAM'de",
+                "IPv6'da broadcast yok → ND: NS Tip 135, NA Tip 136, solicited-node multicast",
+                "Uzak hedef → ARP router'ın LAN MAC'i için; hedef MAC = router, hedef IP değişmez",
+                "Router: FCS kontrol → TTL−1 (0 → düşür) → longest prefix match → yeni MAC ile kapsülle",
+                "C bağlı · L /32 yerel · S statik · D EIGRP · O OSPF · S* 0.0.0.0/0",
+                "Switch collision domain'i böler, broadcast domain'i BÖLEMEZ; router böler",
+                "ARP spoofing → MitM; çözüm DAI + DHCP Snooping",
+                "ip route <hedef ağ> <maske> <next-hop>",
+            ],
+            "cheat": [
+                {"title": "IP vs MAC", "columns": ["Özellik", "IP (Katman 3)", "MAC (Katman 2)"], "rows": [
+                    ["Görev", "Uçtan uca (end-to-end)", "Hop-by-hop, yerel segment"], ["Kapsam", "Ağlar arası, hiyerarşik", "Sadece aynı LAN"],
+                    ["Boyut", "IPv4 32 bit · IPv6 128 bit", "48 bit (6 oktet, hex)"], ["Değişir mi?", "Ağ değişince değişir", "Sabit (burned-in)"],
+                    ["Analoji", "Posta adresi / posta kodu", "T.C. kimlik no / parmak izi"]]},
+                {"title": "ARP ve IPv6 ND", "columns": ["IPv4 (ARP)", "IPv6 (ICMPv6 ND)", "İletim"], "rows": [
+                    ["ARP Request", "Neighbor Solicitation (Tip 135)", "Broadcast ↔ solicited-node multicast"],
+                    ["ARP Reply", "Neighbor Advertisement (Tip 136)", "Unicast"], ["ARP tablosu (arp -a)", "Neighbor table", "—"]]},
+                {"title": "Routing table kodları", "columns": ["Kod", "Anlam", "Nasıl oluşur?"], "rows": [
+                    ["C", "Directly Connected", "Arayüze IP + maske verilip açılınca"], ["L", "Local (/32)", "Router arayüzünün kendi IP'si"],
+                    ["S", "Static", "Yönetici: ip route ..."], ["D / O", "EIGRP / OSPF", "Dinamik protokollerle öğrenilir"],
+                    ["S*", "Default route (Gateway of Last Resort)", "0.0.0.0/0"]]},
+                {"title": "Lab 2 komutları", "columns": ["Cihaz", "Komut"], "rows": [
+                    ["R1 g0/0/0", "ip address 192.168.10.1 255.255.255.0 → no shutdown"], ["R1 g0/0/1", "ip address 10.0.0.1 255.255.255.252 → no shutdown"],
+                    ["R2 g0/0/0", "ip address 192.168.20.1 255.255.255.0 → no shutdown"], ["R2 g0/0/1", "ip address 10.0.0.2 255.255.255.252 → no shutdown"],
+                    ["R1 rota", "ip route 192.168.20.0 255.255.255.0 10.0.0.2"], ["R2 rota", "ip route 192.168.10.0 255.255.255.0 10.0.0.1"],
+                    ["Kontrol", "show ip route  (S satırı)"]]},
+            ],
+            "images": [("ag_arp_routing_topoloji.jpg", "ARP isteği/yanıtı, gateway'e giden paket, ARP cache ve Router 1 routing table (hafta 7, s.7)")],
+            "templates": ["c_arp_hedefi", "c_longest_prefix"],
+        },
     ],
     "flashcards": [
         ("Bandwidth ile throughput farkı?", "Bandwidth teorik maksimum; throughput fiilen ölçülen gerçek hız."),
@@ -411,6 +509,18 @@ Router(config-if)# ip nat outside
         ("Inside Local nedir?", "İç ağdaki cihazın RFC 1918 özel IP'si."),
         ("PAT'ı etkinleştiren anahtar kelime?", "overload."),
         ("Rogue DHCP'ye karşı switch özelliği?", "DHCP Snooping."),
+        ("ARP ne işe yarar?", "Bilinen IPv4 adresinden bilinmeyen MAC adresini bulur."),
+        ("ARP Request ve Reply nasıl iletilir?", "Request broadcast (FF:FF:FF:FF:FF:FF), Reply unicast."),
+        ("ARP tablosunu gösteren / temizleyen komut?", "arp -a / arp -d (hepsi: arp -d *)."),
+        ("IPv6'da ARP yerine ne kullanılır?", "ICMPv6 Neighbor Discovery: NS (Tip 135) ve NA (Tip 136)."),
+        ("Uzak ağa giden pakette ARP kimin için yapılır?", "Default gateway'in (router LAN arayüzünün) MAC adresi için."),
+        ("Uzak ağa giden çerçevede hedef MAC ve hedef IP?", "Hedef MAC = router; hedef IP = uzak cihaz (değişmez)."),
+        ("Router her pakette TTL'yi ne yapar?", "1 azaltır; 0 olursa paketi düşürür."),
+        ("Longest Prefix Match?", "Hedefe uyan en spesifik (en uzun maskeli) rota seçilir."),
+        ("show ip route'ta C, L, S, S*?", "Bağlı ağ · arayüzün /32 IP'si · statik rota · varsayılan rota 0.0.0.0/0."),
+        ("Broadcast domain'i hangi cihaz böler?", "Router (switch sadece collision domain'i böler)."),
+        ("ARP spoofing'e karşı switch özellikleri?", "Dynamic ARP Inspection (DAI) ve DHCP Snooping."),
+        ("Statik rota komutu?", "ip route <hedef ağ> <maske> <next-hop IP>."),
     ],
 }
 
@@ -562,4 +672,82 @@ QUESTIONS = [
     {"week": "ag-h6", "q": "Bir istemcide default gateway tanımlanmamışsa ne olur?",
      "options": ["Hiçbir cihazla haberleşemez", "Yerel ağda haberleşir ama internete çıkamaz", "APIPA adresi alır", "DHCP sunucusu olur"], "answer": 1,
      "explain": "Gateway eksikliği riski: cihaz yerel ağda kusursuz haberleşir ama farklı ağlara/internete ASLA çıkamaz."},
+    # ───────────────────────── 7. Hafta · ARP ve Routing ─────────────────────────
+    {"week": "ag-h7", "q": "Bir dizüstü bilgisayar evden ofise taşındığında aşağıdakilerden hangisi değişir?",
+     "options": ["MAC adresi", "IP adresi", "NIC üretici kodu (OUI)", "Hiçbiri"], "answer": 1,
+     "explain": "IP mantıksal ve hiyerarşiktir; cihaz başka ağa taşınınca değişir. MAC adresi NIC'e üreticide yazılır (burned-in), konumla değişmez."},
+    {"week": "ag-h7", "q": "Paketin kaynaktan nihai hedefe (end-to-end) ulaşmasını sağlayan adres ile yerel segmentte hop-by-hop teslimi sağlayan adres sırasıyla hangisidir?",
+     "options": ["MAC – IP", "IP – MAC", "Port – IP", "MAC – Port"], "answer": 1,
+     "explain": "Katman 3 IP uçtan uca, Katman 2 MAC yerel segmentte cihazdan cihaza teslimat yapar."},
+    {"week": "ag-h7", "q": "ARP protokolünün temel görevi nedir?",
+     "options": ["MAC adresinden IP adresini bulmak", "Bilinen IP adresinden bilinmeyen MAC adresini bulmak", "Alan adını IP'ye çevirmek", "Cihazlara otomatik IP dağıtmak"], "answer": 1,
+     "explain": "Gönderici hedef IP'yi bilir ama Ethernet çerçevesi için hedef MAC şarttır; ARP bu MAC'i bulur. Alan adı → IP DNS'in, IP dağıtımı DHCP'nin işidir."},
+    {"week": "ag-h7", "q": "ARP Request ve ARP Reply mesajları sırasıyla nasıl iletilir?",
+     "options": ["Unicast – Broadcast", "Broadcast – Unicast", "Multicast – Multicast", "Broadcast – Broadcast"], "answer": 1,
+     "explain": "İstek FF:FF:FF:FF:FF:FF hedefli broadcast'tir; yanıtı yalnızca ilgili cihaz unicast olarak verir."},
+    {"week": "ag-h7", "q": "ARP Request çerçevesinin hedef MAC adresi nedir?",
+     "options": ["00:00:00:00:00:00", "FF:FF:FF:FF:FF:FF", "Router'ın MAC adresi", "01:00:5E:00:00:01"], "answer": 1,
+     "explain": "Broadcast MAC adresi FF:FF:FF:FF:FF:FF'tir; aynı yayın etki alanındaki tüm cihazlar alır."},
+    {"week": "ag-h7", "q": "Windows komut satırında ARP tablosunu görüntülemek için hangi komut kullanılır?",
+     "options": ["arp -d", "arp -a", "show ip route", "ipconfig /arp"], "answer": 1,
+     "explain": "arp -a görüntüler, arp -d siler/temizler (arp -d * hepsini). Öğrenilen eşleşmeler RAM'deki ARP cache'te belirli süre tutulur."},
+    {"week": "ag-h7", "q": "IPv6 ağlarında ARP'nin yerini alan mekanizma hangisidir?",
+     "options": ["RARP", "ICMPv6 Neighbor Discovery (NS / NA)", "DHCPv6", "IPv6 broadcast"], "answer": 1,
+     "explain": "IPv6'da broadcast yoktur. Neighbor Solicitation (Tip 135) ARP Request'in, Neighbor Advertisement (Tip 136) ARP Reply'ın karşılığıdır."},
+    {"week": "ag-h7", "q": "IPv4'teki ARP Request mesajının IPv6'daki karşılığı ve ICMPv6 tip numarası hangisidir?",
+     "options": ["Neighbor Advertisement – 136", "Neighbor Solicitation – 135", "Router Solicitation – 133", "Echo Request – 128"], "answer": 1,
+     "explain": "NS Tip 135 = ARP Request karşılığı (solicited-node multicast'e gider). NA Tip 136 = ARP Reply karşılığı (unicast)."},
+    {"week": "ag-h7", "q": "IPv6 Neighbor Solicitation mesajı broadcast yerine nereye gönderilir?",
+     "options": ["FF:FF:FF:FF:FF:FF", "Hedefin dinlediği Solicited-Node Multicast adresine", "Router'ın unicast adresine", "Tüm ağa anycast olarak"], "answer": 1,
+     "explain": "IPv6 tüm cihazları rahatsız eden broadcast yerine yalnızca ilgili cihazın dinlediği solicited-node multicast grubunu kullanır."},
+    {"week": "ag-h7", "q": "192.168.1.10/24 adresli PC, 8.8.8.8 adresine ping atıyor. PC hangi IP için ARP isteği yapar?",
+     "options": ["8.8.8.8", "Default gateway (ör. 192.168.1.1)", "255.255.255.255", "DNS sunucusu"], "answer": 1,
+     "explain": "AND işlemi hedefin uzak ağda olduğunu gösterir. ARP hedef için DEĞİL, router'ın LAN arayüz MAC'i (default gateway) için yapılır."},
+    {"week": "ag-h7", "q": "Uzak ağdaki bir sunucuya giden çerçeve PC'den çıkarken hedef MAC ve hedef IP alanlarında ne yazar?",
+     "options": ["Hedef MAC: sunucu · Hedef IP: router", "Hedef MAC: router · Hedef IP: sunucu", "Hedef MAC: router · Hedef IP: router", "Hedef MAC: broadcast · Hedef IP: sunucu"], "answer": 1,
+     "explain": "Çerçevenin hedef MAC'ine router MAC yazılır, fakat hedef IP değişmez (uçtan uca hedef sunucudur)."},
+    {"week": "ag-h7", "q": "Kaynak cihaz hedefin aynı yerel ağda olup olmadığına nasıl karar verir?",
+     "options": ["Hedef MAC adresine bakar", "Hedef IP ile kendi subnet mask'ini AND işlemine tabi tutar", "DNS'e sorar", "Router'a ping atar"], "answer": 1,
+     "explain": "AND sonucu ağ adresi kendi ağıyla aynıysa yerel (ARP hedefe), farklıysa uzak (ARP gateway'e) iletişim yapılır."},
+    {"week": "ag-h7", "q": "Router'ın paket iletim adımlarının doğru sırası hangisidir?",
+     "options": ["Rota arama → De-capsulation → IP inceleme → Re-capsulation", "De-capsulation → IP inceleme (TTL−1) → Rota arama → Re-capsulation",
+                 "IP inceleme → Re-capsulation → Rota arama → De-capsulation", "De-capsulation → Re-capsulation → IP inceleme → Rota arama"], "answer": 1,
+     "explain": "1) Çerçeveyi al, FCS denetle, L2 başlığını sök · 2) hedef IP'ye bak, TTL'yi 1 azalt · 3) longest prefix match ile rota bul · 4) yeni MAC'lerle kapsülleyip ilet."},
+    {"week": "ag-h7", "q": "TTL değeri 1 olan bir paket router'a ulaştığında ne olur?",
+     "options": ["TTL 2'ye çıkarılır ve iletilir", "TTL 1 azaltılır, 0 olduğu için paket düşürülür", "Paket değiştirilmeden iletilir", "Paket gönderene geri yollanır, TTL sıfırlanır"], "answer": 1,
+     "explain": "Router TTL'yi 1 azaltır; TTL 0 olursa paket düşürülür. Bu, döngüdeki paketlerin sonsuza dek dolaşmasını önler."},
+    {"week": "ag-h7", "q": "Routing table'da 10.1.0.0/16 ve 10.1.5.0/24 rotaları var. 10.1.5.20 hedefli paket hangi rotayı kullanır?",
+     "options": ["10.1.0.0/16", "10.1.5.0/24", "Varsayılan rota 0.0.0.0/0", "Paket düşürülür"], "answer": 1,
+     "explain": "Longest Prefix Match: ikisi de eşleşir ama /24 daha uzun (daha spesifik) prefix'tir, o seçilir."},
+    {"week": "ag-h7", "q": "`show ip route` çıktısında elle `ip route ...` komutuyla yazılmış rotanın kodu nedir?",
+     "options": ["C", "L", "S", "O"], "answer": 2,
+     "explain": "S = Static. C doğrudan bağlı, L arayüzün kendi /32 IP'si, O OSPF, D EIGRP ile öğrenilmiş rotadır."},
+    {"week": "ag-h7", "q": "Routing table'daki \"L\" kodlu satır neyi gösterir?",
+     "options": ["Uzak ağa giden statik rotayı", "Router arayüzüne atanmış spesifik /32 IP adresini", "Varsayılan rotayı", "OSPF ile öğrenilmiş rotayı"], "answer": 1,
+     "explain": "L (Local): arayüzün kendi IP'si /32 olarak. Aynı arayüzün bağlı olduğu ağın tamamı ise C (Directly Connected) satırıdır."},
+    {"week": "ag-h7", "q": "Bilinmeyen tüm dış trafik için kullanılan \"Gateway of Last Resort\" hangi rotadır?",
+     "options": ["S* 0.0.0.0/0", "C 192.168.1.0/24", "L 192.168.1.1/32", "S 255.255.255.255/32"], "answer": 0,
+     "explain": "Varsayılan rota (default route) S* 0.0.0.0/0: tabloda daha spesifik eşleşme yoksa paket buraya gönderilir."},
+    {"week": "ag-h7", "q": "Aşağıdakilerden hangisi broadcast domain'i (yayın etki alanını) böler?",
+     "options": ["Hub", "Layer 2 switch", "Router", "Repeater"], "answer": 2,
+     "explain": "Switch collision domain'i port bazında ayırır ama broadcast'leri tüm portlara iletir. Router arayüzü broadcast'i asla diğer ağa geçirmez."},
+    {"week": "ag-h7", "q": "Binlerce cihazın tek bir büyük LAN'da (tek broadcast domain) olmasının sonucu nedir?",
+     "options": ["Daha düşük gecikme", "Yayın fırtınası (broadcast storm) ve ağın kilitlenmesi", "IP çakışmasının önlenmesi", "Daha yüksek güvenlik"], "answer": 1,
+     "explain": "ARP ve DHCP gibi broadcast'ler tüm cihazlara gider; ağ router'larla küçük segmentlere bölünmelidir."},
+    {"week": "ag-h7", "q": "Bir istemcide `arp -a` çıktısında 192.168.1.1 (gateway) karşısında router'ın değil, ağa kaçak bağlanmış bir bilgisayarın MAC adresi görülüyor. Bu hangi saldırıdır?",
+     "options": ["DHCP Starvation", "ARP Spoofing / ARP Poisoning (Man-in-the-Middle)", "MAC Flooding", "DNS Spoofing"], "answer": 1,
+     "explain": "Saldırgan sahte ARP Reply'larla kendini router gibi tanıtıp trafiği üzerine çekmiştir (MitM)."},
+    {"week": "ag-h7", "q": "ARP spoofing saldırısını engellemek için switch'lerde hangi özellikler etkinleştirilir?",
+     "options": ["Port Mirroring ve STP", "Dynamic ARP Inspection (DAI) ve DHCP Snooping", "NAT ve PAT", "VLAN Trunking ve CDP"], "answer": 1,
+     "explain": "DAI sahte ARP yanıtlarını DHCP Snooping'in tuttuğu IP-MAC bağlama tablosuyla karşılaştırıp engeller; ardından ARP tabloları arp -d * ile temizlenir."},
+    {"week": "ag-h7", "q": "Packet Tracer Lab 1'de PC0'dan ilk kez `ping 192.168.1.20` başlatıldığında Simulation modunda neden iki paket görülür?",
+     "options": ["Ping her zaman iki paket gönderir", "Önce hedef MAC'i öğrenmek için ARP, ardından ICMP (ping) paketi oluşur", "Switch paketi çoğaltır", "Biri IPv4 biri IPv6 paketidir"], "answer": 1,
+     "explain": "ARP tablosu başta boştur; ICMP çerçevesi kurulmadan önce ARP çözümlemesi yapılır. İkinci pingde ARP gerekmez."},
+    {"week": "ag-h7", "q": "Lab 2'de Router1'den 192.168.20.0/24 ağına statik rota tanımlayan doğru komut hangisidir? (R1–R2 bağlantısı 10.0.0.0/30, R2 = 10.0.0.2)",
+     "options": ["ip route 192.168.20.0 255.255.255.0 10.0.0.2", "ip route 10.0.0.2 255.255.255.0 192.168.20.0", "ip route 192.168.20.0 255.255.255.252 10.0.0.1",
+                 "route add 192.168.20.0 10.0.0.2"], "answer": 0,
+     "explain": "Söz dizimi: ip route <hedef ağ> <maske> <next-hop>. Next-hop karşı router'ın bağlantı IP'si 10.0.0.2'dir. R2'de ise ip route 192.168.10.0 255.255.255.0 10.0.0.1."},
+    {"week": "ag-h7", "q": "İki router arasındaki 10.0.0.0/30 bağlantısında kaç kullanılabilir host adresi vardır?",
+     "options": ["1", "2", "4", "6"], "answer": 1,
+     "explain": "/30 → 2 host biti → 2² − 2 = 2 (10.0.0.1 ve 10.0.0.2). Maske 255.255.255.252; noktadan noktaya bağlantılar için idealdir."},
 ]
