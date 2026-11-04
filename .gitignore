@@ -16,3 +16,6 @@ venv/
 
 # Yerel araç ayarları
 .claude/
+
+# Yerel proje özeti (Gemini için)
+PROJE_OZETI.md
