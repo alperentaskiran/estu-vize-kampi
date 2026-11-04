@@ -22,7 +22,8 @@ def _week_view(course: dict, week: dict) -> None:
         progress.set_topic(week["id"], done)
 
     ui.must_box(week["must"])
-    st.markdown(week["summary"])
+    with st.container(key=f"lesson_{week['id']}"):
+        st.markdown(week["summary"])
 
     if week["concepts"]:
         st.markdown("#### 🔑 Kritik kavramlar")

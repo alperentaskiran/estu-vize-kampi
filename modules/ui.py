@@ -12,7 +12,7 @@ CSS = """
 
 :root {
   --bg: #0b1020; --panel: #121933; --panel2: #18213f; --line: rgba(148,163,255,.14);
-  --text: #e6e9f5; --muted: #9aa3c7; --accent: #7c5cff; --accent2: #22d3ee;
+  --text: #f1f3fb; --muted: #b6bedd; --accent: #7c5cff; --accent2: #22d3ee;
   --ok: #34d399; --warn: #fbbf24; --bad: #f87171;
 }
 html, body, [class*="css"], .stMarkdown, .stText { font-family: 'Inter', system-ui, sans-serif; }
@@ -20,7 +20,30 @@ code, pre, .stCode, textarea { font-family: 'JetBrains Mono', ui-monospace, mono
   font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }  /* <= ve != gerçek karakterleriyle görünsün */
 .stApp { background: radial-gradient(1200px 600px at 10% -10%, rgba(124,92,255,.18), transparent 60%),
                      radial-gradient(900px 500px at 110% 0%, rgba(34,211,238,.12), transparent 60%), var(--bg); }
-.block-container { padding-top: 1.2rem; padding-bottom: 4rem; max-width: 1280px; }
+.block-container { padding-top: 1.2rem; padding-bottom: 4rem; padding-left: 2.2rem; padding-right: 2.2rem; max-width: 1480px; }
+/* Genel okunabilirlik: gövde metni, listeler ve başlıklar */
+[data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li { font-size: 1.12rem; line-height: 1.8; color: var(--text); }
+[data-testid="stMarkdownContainer"] li { margin: .25rem 0; }
+[data-testid="stMarkdownContainer"] strong { color: #ffffff; }
+[data-testid="stMarkdownContainer"] h3 { font-size: 1.6rem; line-height: 1.35; margin-top: .4rem; }
+[data-testid="stMarkdownContainer"] h4 { font-size: 1.3rem; line-height: 1.4; margin: 1.4rem 0 .5rem; color: #e0e7ff; }
+[data-testid="stMarkdownContainer"] h5 { font-size: 1.15rem; margin: 1.1rem 0 .4rem; color: #c7d2fe; }
+[data-testid="stMarkdownContainer"] code:not(pre code) { font-size: .95em; padding: .12em .38em; border-radius: 6px; color: #fde68a; background: rgba(253,230,138,.09); }
+[data-testid="stMarkdownContainer"] blockquote { border-left: 4px solid var(--warn); background: rgba(251,191,36,.08); border-radius: 0 12px 12px 0;
+  padding: .7rem 1.1rem; margin: .9rem 0; }
+[data-testid="stMarkdownContainer"] table { font-size: 1.04rem; line-height: 1.6; border-collapse: collapse; margin: .6rem 0 1.1rem; width: 100%; }
+[data-testid="stMarkdownContainer"] th { background: rgba(124,92,255,.22); color: #fff; font-weight: 700; padding: .6rem .85rem; text-align: left; }
+[data-testid="stMarkdownContainer"] td { padding: .55rem .85rem; border-top: 1px solid var(--line); vertical-align: top; }
+[data-testid="stMarkdownContainer"] tr:nth-child(even) td { background: rgba(255,255,255,.025); }
+/* Konu anlatımı gövdesi: ferah kart */
+[class*="st-key-lesson_"] { background: rgba(18,25,51,.55); border: 1px solid var(--line); border-radius: 18px; padding: 1.4rem 1.8rem 1rem; }
+/* Kod blokları (özet, soru, şablon): büyük ve ligatürsüz */
+[data-testid="stCode"] pre, [data-testid="stCode"] code { font-size: 1.04rem !important; line-height: 1.7 !important; }
+/* Sınav şıkları */
+div[data-testid="stRadio"] label { padding: .45rem .3rem; }
+div[data-testid="stRadio"] label p { font-size: 1.14rem !important; line-height: 1.6 !important; }
+div[data-testid="stAlert"] p { font-size: 1.08rem; line-height: 1.7; }
+.stButton button p, .stDownloadButton button p { font-size: 1.02rem; }
 header[data-testid="stHeader"] { background: transparent; }
 
 .hero { display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between;
@@ -33,9 +56,9 @@ header[data-testid="stHeader"] { background: transparent; }
 .countdown span { font-size: .78rem; color: var(--muted); }
 
 .card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line);
-        border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; }
-.card h4 { margin: 0 0 6px; font-size: 1.02rem; }
-.card .sub { color: var(--muted); font-size: .85rem; }
+        border-radius: 16px; padding: 20px 22px; margin-bottom: 14px; }
+.card h4 { margin: 0 0 8px; font-size: 1.15rem; }
+.card .sub { color: var(--muted); font-size: .97rem; line-height: 1.6; }
 .stat { font-size: 1.6rem; font-weight: 800; }
 .pill { display:inline-block; padding: 2px 10px; border-radius: 999px; font-size: .74rem; font-weight: 600;
         border: 1px solid var(--line); background: rgba(124,92,255,.15); color: #cfc6ff; margin: 2px 4px 2px 0; }
@@ -43,47 +66,53 @@ header[data-testid="stHeader"] { background: transparent; }
 .bar > div { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
 
 .must { border: 1px solid rgba(248,113,113,.45); background: linear-gradient(135deg, rgba(248,113,113,.14), rgba(251,191,36,.08));
-        border-radius: 16px; padding: 14px 18px; margin: 6px 0 14px; }
-.must .title { font-weight: 800; color: #fecaca; letter-spacing: .02em; margin-bottom: 6px; }
-.must ul { margin: 0; padding-left: 1.1rem; } .must li { margin: 3px 0; }
+        border-radius: 16px; padding: 18px 24px; margin: 8px 0 18px; }
+.must .title { font-weight: 800; font-size: 1.12rem; color: #fecaca; letter-spacing: .02em; margin-bottom: 8px; }
+.must ul { margin: 0; padding-left: 1.3rem; } .must li { margin: 6px 0; font-size: 1.1rem; line-height: 1.65; color: #fff5f5; }
 
-.concept { background: rgba(34,211,238,.06); border: 1px solid rgba(34,211,238,.25); border-radius: 12px; padding: 10px 12px; height: 100%; }
-.concept b { color: #a5f3fc; } .concept div { color: var(--text); font-size: .9rem; margin-top: 3px; }
+.concept { background: rgba(34,211,238,.07); border: 1px solid rgba(34,211,238,.3); border-radius: 14px; padding: 14px 16px; height: 100%; }
+.concept b { color: #a5f3fc; font-size: 1.08rem; } .concept div { color: var(--text); font-size: 1.04rem; line-height: 1.6; margin-top: 5px; }
 
-.flash { min-height: 190px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-         border-radius: 20px; padding: 26px; font-size: 1.15rem; font-weight: 600; border: 1px solid var(--line);
+.flash { min-height: 240px; line-height: 1.55; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+         border-radius: 20px; padding: 32px 36px; font-size: 1.42rem; font-weight: 600; border: 1px solid var(--line);
          background: linear-gradient(135deg, rgba(124,92,255,.28), rgba(24,33,63,.9)); }
 .flash.back { background: linear-gradient(135deg, rgba(52,211,153,.22), rgba(24,33,63,.9)); }
-.flash small { color: var(--muted); font-weight: 500; font-size: .78rem; margin-bottom: 10px; letter-spacing: .08em; }
+.flash small { color: var(--muted); font-weight: 500; font-size: .9rem; margin-bottom: 10px; letter-spacing: .08em; }
 
 
 .ed-tab { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top: 10px; padding: 9px 14px;
-          background: #0d1326; border: 1px solid #1f2a4d; border-bottom: none; border-radius: 14px 14px 0 0; font-size: .85rem; }
+          background: #0d1326; border: 1px solid #1f2a4d; border-bottom: none; border-radius: 14px 14px 0 0; font-size: .98rem; }
 .ed-dots span { display:inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; }
 .ed-file { font-family: 'JetBrains Mono', monospace; color: #e6e9f5; background: #05070f; padding: 3px 10px; border-radius: 8px 8px 0 0;
            border-bottom: 2px solid var(--accent); }
 .ed-title { color: var(--muted); flex: 1; min-width: 160px; } .ed-lang { color: #a5b4fc; font-weight: 600; }
 .st-key-code_editor { margin-top: -1rem; }
 .st-key-code_editor pre { border-radius: 0 0 14px 14px !important; border: 1px solid #1f2a4d; border-top: none; background: #05070f !important;
-                          min-height: 360px; max-height: 68vh; }
-.st-key-code_editor pre code { font-size: .98rem !important; line-height: 1.65 !important; }
-.ed-status { display:flex; flex-wrap:wrap; gap: 6px 18px; justify-content:space-between; padding: 6px 4px 10px; color: var(--muted); font-size: .8rem; }
+                          min-height: 420px; max-height: 74vh; }
+.st-key-code_editor pre code { font-size: 1.12rem !important; line-height: 1.75 !important; }
+.ed-status { display:flex; flex-wrap:wrap; gap: 6px 18px; justify-content:space-between; padding: 8px 4px 12px; color: var(--muted); font-size: .95rem; }
 
-.qcard { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }
-.qmeta { color: var(--muted); font-size: .8rem; margin-bottom: 6px; }
-.qtext { font-size: 1.08rem; font-weight: 600; line-height: 1.5; }
+.qcard { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 18px; padding: 24px 28px; margin-bottom: 10px; }
+.qmeta { color: var(--muted); font-size: .95rem; margin-bottom: 8px; }
+.qtext { font-size: 1.3rem; font-weight: 600; line-height: 1.6; }
 
 textarea { font-size: .9rem !important; line-height: 1.45 !important; }
 div[data-testid="stSegmentedControl"] button { font-weight: 600; }
 .stTabs [data-baseweb="tab-list"] { flex-wrap: wrap; gap: 4px; }
 
 @media (max-width: 640px) {
-  .block-container { padding-left: .7rem; padding-right: .7rem; padding-top: .6rem; }
+  .block-container { padding-left: .8rem; padding-right: .8rem; padding-top: .6rem; }
+  [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li { font-size: 1.04rem; line-height: 1.72; }
+  [data-testid="stMarkdownContainer"] table { font-size: .95rem; display: block; overflow-x: auto; }
+  [data-testid="stMarkdownContainer"] h3 { font-size: 1.3rem; } [data-testid="stMarkdownContainer"] h4 { font-size: 1.15rem; }
+  [class*="st-key-lesson_"] { padding: .9rem 1rem .6rem; }
+  [data-testid="stCode"] pre, [data-testid="stCode"] code, .st-key-code_editor pre code { font-size: .95rem !important; }
+  .must { padding: 14px 16px; } .must li { font-size: 1.02rem; }
   .hero { padding: 14px; } .hero h1 { font-size: 1.2rem; }
   .countdown b { font-size: 1.4rem; }
-  .card, .qcard { padding: 12px 13px; }
-  .qtext { font-size: 1rem; }
-  .flash { min-height: 150px; font-size: 1rem; padding: 18px; }
+  .card, .qcard { padding: 15px 16px; }
+  .qtext { font-size: 1.12rem; }
+  .flash { min-height: 180px; font-size: 1.15rem; padding: 22px; }
 }
 </style>
 """

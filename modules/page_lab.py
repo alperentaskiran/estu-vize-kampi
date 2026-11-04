@@ -66,7 +66,7 @@ def _editor(title: str, lang: str, code: str, meta: str, stdin: str = "") -> Non
 
 def render() -> None:
     ss = st.session_state
-    _, center, _ = st.columns([1, 10, 1])
+    _, center, _ = st.columns([0.35, 10, 0.35])
     with center:
         # Widget değerleri her çalıştırmada, widget'tan ÖNCE yeniden yazılır (önceki çalıştırmada atanan
         # anahtarların tarayıcıda boş görünmesi sorununa karşı).
