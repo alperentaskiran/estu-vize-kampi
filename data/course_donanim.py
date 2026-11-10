@@ -1,7 +1,7 @@
 """BTP239 — Bilgisayar Donanımı: bilgisayarın tanımı, tarihçesi, sınıflandırılması, sayı sistemleri;
-kasa, güç kaynağı ve UPS; anakart (form faktörü, yonga seti, veri yolları, portlar, IRQ/DMA).
+kasa, güç kaynağı ve UPS; anakart (form faktörü, yonga seti, veri yolları, portlar, IRQ/DMA); işlemci (bileşenler, Von Neumann / Harvard, CISC / RISC, komut döngüsü).
 
-Kaynaklar: BTP239_Hafta01.pdf, btp239_h1_donusumler.pdf (font kodlaması bozuk; slaytlar görsel olarak okundu),
+Kaynaklar: BTP239_Hafta01.pdf, btp239_h1_donusumler.pdf (font kodlaması bozuk; slaytlar görsel olarak okundu), btp239_Islemci.pdf,
 BTP239_Hafta02.pdf, BTP239_Hafta03.pdf (görsel slaytlar ayrıca okundu).
 """
 
@@ -12,7 +12,7 @@ COURSE = {
     "icon": "🧮",
     "color": "#a78bfa",
     "teacher": "",
-    "sources": ["BTP239_Hafta01.pdf", "btp239_h1_donusumler.pdf", "BTP239_Hafta02.pdf", "BTP239_Hafta03.pdf"],
+    "sources": ["BTP239_Hafta01.pdf", "btp239_h1_donusumler.pdf", "BTP239_Hafta02.pdf", "BTP239_Hafta03.pdf", "btp239_Islemci.pdf"],
     "weeks": [
         {
             "id": "dn-h1",
@@ -338,6 +338,120 @@ USB ile hızlı/kapalıyken şarj · akıllı güç yönetimi · kolay BIOS yede
                        ("dn_portlar.jpg", "Anakart arka panel portları (s.23)")],
             "templates": ["c_bant_genisligi"],
         },
+        {
+            "id": "dn-h4",
+            "title": "4. Hafta — İşlemci (CPU): Bileşenler, Mimariler (Von Neumann / Harvard, CISC / RISC), Komut Döngüsü",
+            "sources": ["btp239_Islemci.pdf"],
+            "summary": """
+**İşlemci (CPU):** bilgisayarın **beyni**; kendisine verilen komutları yerine getirir, **transistörlerden** oluşur.
+Aritmetik, mantık ve karar verme işlemlerini yapar; **ikilik kodları yürütür**. İşlemcinin anladığı ikilik kod kümesine **komut kümesi (instruction set)** denir.
+**Blok diyagram:** CPU içinde **içsel bellek, kontrol birimi, aritmetik-mantık birimi**; dışında birincil/ikincil bellek ve giriş/çıkış aygıtları.
+**Temel işlemler:** 1) **atama** · 2) **aritmetiksel ve mantıksal** · 3) **dallanma ve kontrol** işlemleri.
+Farklı işlemci örnekleri: Intel Core, AMD (Ryzen, Phenom), Qualcomm Snapdragon, Samsung Exynos, NVIDIA.
+
+**İşlemci bileşenleri:**
+* **ALU (Aritmetik Mantık Birimi):** işlemcideki **tüm aritmetiksel ve mantıksal** işlemler.
+* **Program Sayacı (PC – Program Counter):** RAM'de **sıradaki işlenecek komutun adresini** tutan yazmaç.
+* **Kod Kaydedicisi (IR – Instruction Register):** RAM'den işletilmek üzere **getirilen kodun geçici olarak tutulduğu** yer.
+* **Kod Çözücü (Instruction Decoder):** kodu parametrelerinden ayrıştırıp ALU için anlamlı hâle getirir (mantık kapılarından oluşan devre).
+* **Yazmaçlar / Kaydediciler (Registers):** verilerin işlem sırasında **geçici** saklandığı hafıza; boyutu **işlemci veri uzunluğu kadar** (32/64 bit).
+* **Bayraklar (Flags):** ALU'daki işlem sonucuna göre değer alan **1 bitlik** (0/1) göstergeler — **sıfır, işaret, elde, taşma** vb.
+  Örn. çıkarma sonucu 0 ise **sıfır bayrağı = 1**.
+* Şemadaki diğer parçalar: **komut önbelleği**, **hafıza (veri) önbelleği**, adres hattı, veri hattı, kontrol hattı, RAM bağlantısı.
+
+#### Hafıza organizasyonuna göre mimariler
+**Von Neumann (Tümleşik Tek Bellek):**
+* İşlem birimi bellekten ayrılmıştır; **komut ve veri için aynı bellek** (ve aynı yol) kullanılır.
+* Veri iletişimi komut iletişimini **beklemek zorundadır**; yolların hızı işlemciye yetişemez → **darboğaz (bottleneck)**.
+* Komut ve veri aynı bellekte sıralı olduğu için **karışma ihtimali** yüksektir.
+* Çözüm: **önbellek (cache)** — komut ve veriler işlem birimine yakın, **ayrı önbelleklerde** tutularak darboğaz azaltılır.
+* Kullanım: **kişisel bilgisayar** işlemcileri.
+
+**Harvard (Yalıtılmış Çift Bellek):**
+* **Komutlar ve veriler ayrı belleklerde** saklanır → Von Neumann'a göre **daha hızlı ve daha güvenli**.
+* Kullanım: **performansın ve güvenliğin önemli olduğu** sistemler, **mikrodenetleyiciler**.
+
+#### Komut işleme tekniğine göre mimariler
+**CISC (Complex Instruction Set Computers — Karmaşık Komut Kümesi):**
+* **Çok sayıda** komut, **her eylem için bir komut**; karmaşık komutlar ve karmaşık adresleme yöntemleri.
+* **Bellek gereksinimini en aza indirir**, **programlamayı ve derleyicinin işini kolaylaştırır**; makine dili üst seviye dile yaklaşır.
+* "**Donanım yazılımdan hızlıdır**" prensibi; komutlar **mikro-kod** ile çalıştırılır (makine komutları → mikro-kod çevrimi → mikro komutlar → mikro komut çalıştırma), **mikrokomutlu denetim birimi** ve kod çözücü.
+* Dezavantajlar: işlemci karmaşıklığı artar, performans düşebilir, **komut uzunlukları farklıdır**, bazı komutlar çok az kullanılır ama tanımlıdır,
+  **çip maliyeti yüksek**, **güç tüketimi fazla** → **mobil cihazlar için uygun değil**.
+* Üreticiler: **Intel, AMD, VIA**.
+
+**RISC (Reduced Instruction Set Computers — İndirgenmiş Komut Kümesi):**
+* CISC'in eksiklerini gidermek için ortaya çıktı; **daha az bellek erişimi** ile performansı artırır.
+* **Az sayıda, basit** komut ve az sayıda basit adresleme kipi; **komut uzunlukları sabit**.
+* Komutlar bellekte değil **işlemci içindeki yazmaçlarda** çalışır; belleğe **sadece okuma/yazma (load/store)** için erişilir; **çok sayıda yazmaç**.
+* CISC'in **tek komutla** yaptığını RISC **iki veya daha fazla** komutla yapar.
+* **ARM (Acorn RISC Machine):** RISC tabanlı, 32 ve 64 bit sürümleri; **düşük güç tüketimi**, diğer RISC'lere göre yüksek performans.
+  Üreticiler: **Qualcomm, Samsung, MediaTek, HiSilicon, NVIDIA**.
+
+**Örnek — RAM'de 01 adresinde 4, 02 adresinde 6 var; çarpıp sonucu 01'e yaz:**
+
+| ARM (RISC) | CISC |
+|---|---|
+| `LDR A,01` — 01'deki değeri A yazmacına yükle | `MUL 01,02` — tek komut: çarp ve 01'e yaz |
+| `LDR B,02` — 02'deki değeri B'ye yükle | |
+| `MUL A,B` — yazmaçlarda çarp (A = 24) | |
+| `STR 01,A` — sonucu belleğe (01) yaz | |
+
+#### Komut döngüsü (Fetch – Decode – Execute – Write Back)
+1. **Getir (Fetch):** program dosyası depolamadan **RAM'e** alınır; başlangıç adresi **PC'ye** yüklenir; PC'nin gösterdiği adresteki kod RAM'den **kod kaydedicisine (IR)** getirilir.
+   İşlemcinin kodları **birer birer okuduğu** aşamadır.
+2. **Çöz (Decode):** **kod çözücü**, kodları parametrelerinden ayırıp **ALU için anlamlı** hâle getirir (kontrol birimi).
+3. **Çalıştır (Execute):** kodlardaki işlemler **ALU**'da çalıştırılır.
+4. **Yaz (Write Back / store):** sonuç komutun gerektirdiği biçimde **yazmaca veya doğrudan RAM'e** yazılır.
+Ardından PC bir sonraki komutu gösterir ve döngü tekrarlanır.
+""",
+            "concepts": [
+                ("ALU", "Tüm aritmetik ve mantıksal işlemleri yapan birim."),
+                ("Program Sayacı (PC)", "Sıradaki işlenecek komutun bellek adresini tutan yazmaç."),
+                ("Kod Kaydedicisi (IR)", "RAM'den getirilen komutun geçici tutulduğu yer."),
+                ("Kod Çözücü", "Komutu ayrıştırıp ALU için anlamlı hâle getirir."),
+                ("Yazmaç (register)", "İşlemci içindeki, veri uzunluğu boyutunda geçici hafıza."),
+                ("Bayrak (flag)", "1 bitlik sonuç göstergesi: sıfır, işaret, elde, taşma."),
+                ("Von Neumann", "Komut ve veri tek bellekte; darboğaz → önbellek."),
+                ("Harvard", "Komut ve veri ayrı bellekte; hızlı, güvenli; mikrodenetleyiciler."),
+                ("CISC", "Çok ve karmaşık komut, mikro-kod; Intel, AMD, VIA."),
+                ("RISC / ARM", "Az, basit, sabit uzunlukta komut; yazmaç ağırlıklı, düşük güç."),
+            ],
+            "must": [
+                "CPU = beyin; transistörlerden oluşur; komut kümesi (instruction set)",
+                "Temel işlemler: atama · aritmetik/mantık · dallanma/kontrol",
+                "PC = sıradaki komutun ADRESİ · IR = getirilen KOMUTUN kendisi",
+                "Bayraklar 1 bit: sıfır, işaret, elde, taşma (sonuç 0 → sıfır bayrağı 1)",
+                "Von Neumann: tek bellek, darboğaz, çözüm önbellek, kişisel bilgisayarlar · Harvard: ayrı bellek, hızlı/güvenli, mikrodenetleyici",
+                "CISC: çok komut, mikro-kod, değişken uzunluk, pahalı, çok güç; Intel/AMD/VIA",
+                "RISC: az/basit/sabit uzunluk komut, çok yazmaç, bellek sadece load/store; ARM düşük güç (Qualcomm, Samsung…)",
+                "CISC MUL 01,02 = ARM LDR, LDR, MUL, STR (4 komut)",
+                "Komut döngüsü: Fetch → Decode → Execute → Write Back",
+            ],
+            "cheat": [
+                {"title": "İşlemci bileşenleri", "columns": ["Bileşen", "Görevi"], "rows": [
+                    ["ALU", "Aritmetik ve mantıksal işlemler"], ["Program Sayacı (PC)", "Sıradaki komutun adresi"],
+                    ["Kod Kaydedicisi (IR)", "Getirilen komutu geçici tutar"], ["Kod Çözücü", "Komutu ALU için çözer"],
+                    ["Yazmaçlar", "Geçici veri (işlemci veri uzunluğu kadar)"], ["Bayraklar", "1 bit: sıfır, işaret, elde, taşma"]]},
+                {"title": "Von Neumann vs Harvard", "columns": ["", "Von Neumann", "Harvard"], "rows": [
+                    ["Bellek", "Komut + veri tek bellek", "Komut ve veri ayrı bellek"], ["Sorun", "Darboğaz, karışma riski", "—"],
+                    ["Hız / güvenlik", "Daha yavaş (önbellekle iyileşir)", "Daha hızlı, daha güvenli"], ["Kullanım", "Kişisel bilgisayarlar", "Mikrodenetleyiciler, performans/güvenlik kritik"]]},
+                {"title": "CISC vs RISC", "columns": ["", "CISC", "RISC"], "rows": [
+                    ["Komut sayısı", "Çok, karmaşık", "Az, basit"], ["Komut uzunluğu", "Değişken", "Sabit"],
+                    ["Çalıştırma", "Mikro-kod", "Yazmaçlarda, donanımsal"], ["Bellek erişimi", "Komutlar bellekte çalışabilir", "Sadece load/store"],
+                    ["Yazmaç", "Az", "Çok"], ["Güç / maliyet", "Yüksek", "Düşük"], ["Üretici", "Intel, AMD, VIA", "ARM: Qualcomm, Samsung, MediaTek, HiSilicon, NVIDIA"]]},
+                {"title": "Komut döngüsü", "columns": ["Aşama", "Ne olur?"], "rows": [
+                    ["Fetch (Getir)", "PC'deki adresteki komut RAM'den IR'ye"], ["Decode (Çöz)", "Kod çözücü komutu ayrıştırır"],
+                    ["Execute (Çalıştır)", "ALU işlemi yapar"], ["Write Back (Yaz)", "Sonuç yazmaca veya RAM'e"]]},
+            ],
+            "images": [("dn_islemci_blok.jpg", "İşlemci blok diyagramı (btp239_Islemci s.3)"),
+                       ("dn_islemci_bilesenleri.jpg", "İşlemci bileşenleri: önbellekler, kod çözücü, yazmaçlar, ALU, hatlar (s.12)"),
+                       ("dn_cisc_mikrokod.jpg", "CISC: makine komutu → mikro-kod çevrimi → mikro komut çalıştırma (s.18)"),
+                       ("dn_arm_cisc_ornek.jpg", "Aynı çarpma: ARM 4 komut, CISC tek komut (s.24)"),
+                       ("dn_komut_dongusu.jpg", "Komut döngüsü: fetch → decode → execute → store (s.30)"),
+                       ("dn_ayrintili_dongu.jpg", "Ayrıntılı komut döngüsü: PC, kod kaydedicisi, kod çözücü, yazmaçlar, ALU (s.31)")],
+            "templates": [],
+        },
     ],
     "flashcards": [
         ("GIGO ilkesi?", "Garbage In, Garbage Out — çöp girerse çöp çıkar."),
@@ -377,6 +491,18 @@ USB ile hızlı/kapalıyken şarj · akıllı güç yönetimi · kolay BIOS yede
         ("USB 2.0 ve 3.0 port renkleri / pin sayıları?", "2.0 siyah, 4 pin · 3.0 mavi, 9 pin."),
         ("IRQ 0, 1, 8, 12, 13?", "Sistem saati, klavye, RTC, PS/2 fare, FPU."),
         ("Kaç IRQ ve kaç DMA kanalı vardır?", "16 IRQ (0–15) · 8 DMA (0–7)."),
+        ("İşlemcinin anladığı ikilik kod kümesine ne denir?", "Komut kümesi (instruction set)."),
+        ("İşlemcinin 3 temel işlem türü?", "Atama · aritmetik/mantıksal · dallanma ve kontrol."),
+        ("Program Sayacı (PC) ne tutar?", "Sıradaki işlenecek komutun bellek adresini."),
+        ("Kod Kaydedicisi (IR) ne tutar?", "RAM'den getirilen ve işletilecek komutu (geçici)."),
+        ("Bayraklar kaç bit ve örnekleri?", "1 bit; sıfır, işaret, elde, taşma."),
+        ("Von Neumann mimarisinin temel sorunu ve çözümü?", "Tek bellek/yol → darboğaz; çözüm önbellek (cache)."),
+        ("Harvard mimarisi nerede kullanılır?", "Performans ve güvenliğin önemli olduğu sistemler, mikrodenetleyiciler."),
+        ("CISC üreticileri?", "Intel, AMD, VIA."),
+        ("RISC'te komut uzunluğu?", "Sabit (CISC'te değişken)."),
+        ("ARM nedir?", "Acorn RISC Machine; RISC tabanlı, düşük güçlü; Qualcomm, Samsung, MediaTek…"),
+        ("CISC'in 'MUL 01,02' komutu ARM'de kaç komut?", "4: LDR A,01 · LDR B,02 · MUL A,B · STR 01,A."),
+        ("Komut döngüsü aşamaları?", "Getir (fetch) → Çöz (decode) → Çalıştır (execute) → Yaz (write back)."),
     ],
 }
 
@@ -617,4 +743,55 @@ QUESTIONS = [
     {"week": "dn-h3", "q": "Aygıtların doğrudan bellek ile veri alışverişi için kullandığı DMA kanalları kaç tanedir?",
      "options": ["4 (0–3)", "8 (0–7)", "16 (0–15)", "2 (0–1)"], "answer": 1,
      "explain": "Bir PC'de 8 DMA kanalı vardır (0–7); ses kartı, disket sürücü, yazıcı portu, ağ kartı kullanır. (IRQ ise 16 hat.)"},
+    {"week": "dn-h4", "q": "RAM üzerinde sıradaki işlenecek komutun adresini tutan işlemci bileşeni hangisidir?",
+     "options": ["ALU", "Program Sayacı (PC)", "Kod Kaydedicisi (IR)", "Bayrak"], "answer": 1,
+     "explain": "PC bir sonraki komutun bellek adresini tutar. IR ise getirilen komutun kendisini geçici olarak tutar."},
+    {"week": "dn-h4", "q": "RAM'den işletilmek üzere getirilen kodun geçici olarak tutulduğu bileşen hangisidir?",
+     "options": ["Kod Kaydedicisi (Instruction Register)", "Program Sayacı", "Kod Çözücü", "ALU"], "answer": 0,
+     "explain": "Fetch aşamasında PC'nin gösterdiği adresteki kod IR'ye getirilir."},
+    {"week": "dn-h4", "q": "ALU'da yapılan bir çıkarma işleminin sonucu 0 ise ne olur?",
+     "options": ["Taşma bayrağı 1 olur", "Sıfır bayrağı 1 olur", "Program sayacı sıfırlanır", "Elde bayrağı 0 olur"], "answer": 1,
+     "explain": "Bayraklar 1 bitliktir ve sonuca göre değer alır; sonuç 0 → sıfır (zero) bayrağı = 1."},
+    {"week": "dn-h4", "q": "İşlemcideki tüm aritmetiksel ve mantıksal işlemlerden sorumlu birim hangisidir?",
+     "options": ["Kontrol birimi", "ALU", "Önbellek", "Kod çözücü"], "answer": 1,
+     "explain": "ALU (Arithmetic Logic Unit) aritmetik ve mantık işlemlerini yapar."},
+    {"week": "dn-h4", "q": "Aşağıdakilerden hangisi işlemcinin temel işlem türlerinden biri DEĞİLDİR?",
+     "options": ["Atama işlemleri", "Aritmetiksel ve mantıksal işlemler", "Dallanma ve kontrol işlemleri", "Görüntü sıkıştırma işlemleri"], "answer": 3,
+     "explain": "Slayta göre temel işlemler: atama, aritmetik/mantıksal, dallanma ve kontrol."},
+    {"week": "dn-h4", "q": "Komut ve veri için aynı belleğin kullanıldığı, darboğaz (bottleneck) sorunu yaşanabilen mimari hangisidir?",
+     "options": ["Harvard", "Von Neumann", "RISC", "ARM"], "answer": 1,
+     "explain": "Von Neumann (tümleşik tek bellek): veri iletişimi komut iletişimini bekler, yollar işlemciye yetişemez → darboğaz."},
+    {"week": "dn-h4", "q": "Von Neumann mimarisindeki darboğaz sorununu azaltmak için geliştirilen çözüm hangisidir?",
+     "options": ["Mikro-kod", "Önbellek (cache)", "Bayraklar", "Daha uzun komutlar"], "answer": 1,
+     "explain": "Komut ve veriler işlem birimine yakın, ayrı önbelleklerde tutularak darboğaz azaltılır."},
+    {"week": "dn-h4", "q": "Komut ve verileri ayrı belleklerde saklayan, daha hızlı ve güvenli olup mikrodenetleyicilerde tercih edilen mimari hangisidir?",
+     "options": ["Von Neumann", "CISC", "Harvard", "Mainframe"], "answer": 2,
+     "explain": "Harvard (yalıtılmış çift bellek). Von Neumann ise kişisel bilgisayar işlemcilerinde kullanılır."},
+    {"week": "dn-h4", "q": "Aşağıdakilerden hangisi CISC mimarisinin özelliklerinden biridir?",
+     "options": ["Komut uzunlukları sabittir", "Az sayıda basit komut vardır", "Komutlar mikro-kod yapısıyla çalıştırılır", "Güç tüketimi düşüktür, mobil için idealdir"], "answer": 2,
+     "explain": "CISC: çok sayıda karmaşık komut, mikro-kod, değişken komut uzunluğu, yüksek maliyet ve güç tüketimi. Diğer şıklar RISC özellikleridir."},
+    {"week": "dn-h4", "q": "Aşağıdakilerden hangisi RISC mimarisinin özelliği DEĞİLDİR?",
+     "options": ["Komut uzunlukları sabittir", "Genellikle çok sayıda yazmaç kullanılır", "Belleğe sadece okuma ve yazma için erişilir", "Her eylem için ayrı karmaşık bir komut vardır"], "answer": 3,
+     "explain": "'Her eylem için bir komut' CISC'e aittir. RISC'te az sayıda basit komut vardır."},
+    {"week": "dn-h4", "q": "Intel, AMD ve VIA firmaları yaygın olarak hangi mimaride işlemci üretir?",
+     "options": ["RISC", "ARM", "CISC", "Harvard"], "answer": 2,
+     "explain": "Slayta göre Intel, AMD ve VIA CISC; Qualcomm, Samsung, MediaTek, HiSilicon, NVIDIA ARM tabanlı işlemci üretir."},
+    {"week": "dn-h4", "q": "ARM kısaltmasının açılımı ve temel özelliği hangisidir?",
+     "options": ["Advanced RAM Memory — yüksek güç", "Acorn RISC Machine — düşük güç tüketimi", "Automatic Register Mode — CISC tabanlı", "Arithmetic Register Machine — tek bellek"], "answer": 1,
+     "explain": "ARM = Acorn RISC Machine; RISC tabanlı, 32/64 bit sürümleri var, düşük güç tüketimi."},
+    {"week": "dn-h4", "q": "CISC işlemcinin MUL 01,02 tek komutuyla yaptığı işi ARM işlemci kaç komutla yapar?",
+     "options": ["1", "2", "3", "4"], "answer": 3,
+     "explain": "LDR A,01 · LDR B,02 · MUL A,B · STR 01,A → 4 komut. RISC'te bellek sadece load/store ile kullanılır."},
+    {"week": "dn-h4", "q": "Komut döngüsünün doğru sıralaması hangisidir?",
+     "options": ["Çöz → Getir → Çalıştır → Yaz", "Getir → Çöz → Çalıştır → Yaz", "Getir → Çalıştır → Çöz → Yaz", "Yaz → Getir → Çöz → Çalıştır"], "answer": 1,
+     "explain": "Fetch → Decode → Execute → Write Back."},
+    {"week": "dn-h4", "q": "Komut döngüsünde kodların parametrelerinden ayrıştırılarak ALU için anlamlı hâle getirildiği aşama hangisidir?",
+     "options": ["Fetch", "Decode", "Execute", "Write Back"], "answer": 1,
+     "explain": "Decode (çöz) aşamasını kod çözücü yapar."},
+    {"week": "dn-h4", "q": "İşlem sonucunun komutun gerektirdiği biçimde yazmaca veya doğrudan RAM'e yazıldığı aşama hangisidir?",
+     "options": ["Getir", "Çöz", "Çalıştır", "Yaz (Write Back)"], "answer": 3,
+     "explain": "Write Back aşamasında sonuç yazmaca veya RAM'e kaydedilir."},
+    {"week": "dn-h4", "q": "Yazmaçların (register) boyutu neye göre belirlenir?",
+     "options": ["RAM kapasitesine", "İşlemci veri uzunluğuna", "Önbellek boyutuna", "Saat hızına"], "answer": 1,
+     "explain": "Yazmaçlar geçici hafıza birimleridir ve işlemci veri uzunluğu kadar (örn. 64 bit) boyuta sahiptir."},
 ]

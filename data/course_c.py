@@ -1,6 +1,6 @@
-"""İşletim Sistemleri ve Güvenliği — C ile Giriş (Hafta 1 & 2) + İşletim Sistemine Giriş ve Derleme Zinciri (Hafta 3).
+"""İşletim Sistemleri ve Güvenliği — C ile Giriş (Hafta 1 & 2) + İşletim Sistemine Giriş ve Derleme Zinciri (Hafta 3) + Process (Hafta 4).
 
-Kaynaklar: Hafta01_C_Giris.pdf, Hafta02_C_Giris_II.pdf, Hafta03_OS.pdf, C_Programlamaya_Giris_Kapsamli.pdf (çalışma fasikülü),
+Kaynaklar: Hafta01_C_Giris.pdf, Hafta02_C_Giris_II.pdf, Hafta03_OS.pdf, Process.pdf, C_Programlamaya_Giris_Kapsamli.pdf (çalışma fasikülü),
 output.pdf (Hafta 1–2 kapsamlı ders notu) (diyagram sayfaları görsel olarak okundu).
 Kod soruları `run` alanında tam program ve `expect` alanında beklenen çıktıyla saklanır;
 tests/verify_questions.py bunları gerçek derleyicide doğrular.
@@ -21,7 +21,7 @@ COURSE = {
     "icon": "⚙️",
     "color": "#f59e0b",
     "teacher": "",
-    "sources": ["Hafta01_C_Giris.pdf", "Hafta02_C_Giris_II.pdf", "Hafta03_OS.pdf", "C_Programlamaya_Giris_Kapsamli.pdf", "output.pdf"],
+    "sources": ["Hafta01_C_Giris.pdf", "Hafta02_C_Giris_II.pdf", "Hafta03_OS.pdf", "Process.pdf", "C_Programlamaya_Giris_Kapsamli.pdf", "output.pdf"],
     "weeks": [
         {
             "id": "c-h1",
@@ -893,6 +893,168 @@ Her satır: **`syscall_adı(argümanlar) = dönüş değeri`**. "Merhaba, dünya
                        ("c_strace.jpg", "strace ./merhaba çıktısı (s.28)")],
             "templates": ["c_derleme_zinciri", "c_assembly_karsilik", "c_write_syscall", "c_elf_bolumler", "c_linker_hata"],
         },
+        {
+            "id": "c-h4",
+            "title": "Hafta 4 — Process (Program vs Process, PCB, Durumlar, fork / wait / exec, Zombi & Yetim)",
+            "sources": ["Process.pdf"],
+            "summary": """
+**Geçen hafta:** OS'in görevleri, kernel ve user/kernel mode, system call, derleme zinciri (.c → .i → .s → .o → binary), ELF ve loader, strace.
+**Bu hafta:** program vs process · PCB · process durumları · `fork()` · `getpid()/getppid()` · `wait()` · `exec()` · zombi ve yetim process.
+
+#### 1. Program ≠ Process
+* **Program:** diskte duran dosya (`./merhaba`) — **statik**.
+* **Process:** çalışan program, OS'teki canlı karşılığı (PID: 4521) — **dinamik**. Aynı program iki kez çalıştırılırsa **iki ayrı process** (iki PID) olur.
+
+**Her process'in kendine ait olanları:** PID · bellek alanı (**kod, veri, heap, stack**) · program counter (**PC** — hangi komutta kaldı?) ·
+CPU register'ları · açık dosyaları (stdin, stdout, dosyalar) · bir **parent**'ı (kendisini yaratan process) · bir **durumu**.
+
+#### 2. PCB — Process Control Block
+Kernel her process için bir PCB tutar; process'i durdurup sonra kaldığı yerden devam ettirebilmek (**context switch**) için gereken her şey buradadır:
+
+| Alan | Örnek |
+|---|---|
+| Process ID (PID) | 4521 |
+| Process State | RUNNING |
+| Program Counter | 0x4005A0 |
+| CPU Registers | rax, rbx, rcx… |
+| Memory Info | text, data, heap, stack |
+| Open Files | stdin, stdout, fd=3… |
+| Parent PID (PPID) | 3120 |
+| Scheduling Info | priority, time slice |
+
+#### 3. Process durumları (state diagram)
+**NEW → (admitted) → READY → (dispatch) → RUNNING → (exit) → TERMINATED**
+* RUNNING → **(interrupt)** → READY: zaman dilimi bitti, CPU başkasına verildi
+* RUNNING → **(I/O wait)** → WAITING: disk/klavye/ağ bekleniyor
+* WAITING → **(I/O done)** → READY: beklenen olay gerçekleşti (doğrudan RUNNING'e değil!)
+
+**Tek çekirdekli CPU'da bir anda SADECE 1 process çalışır**; birden fazlası READY olabilir. OS saniyede yüzlerce kez değiştirir →
+kullanıcı **paralel** sanır ama bu **eşzamanlılıktır (concurrency)**. Gerçek paralellik çok çekirdekli CPU'da mümkündür.
+
+#### 4. fork() — yeni process yaratma
+`fork()` çağıran process'in (**parent**) **kopyası** olan yeni bir process (**child**) yaratır. İkisi de `fork()`'tan **sonraki satırdan** devam eder.
+```c
+printf("fork'tan önce\\n");
+pid_t pid = fork();
+printf("fork'tan sonra\\n");   // iki kez yazılır: parent + child
+```
+**Dönüş değeri — aynı kod, farklı davranış:**
+* **Parent'ta:** child'ın PID'i (**> 0**) · **Child'da:** **0** · **Hata:** **−1** (< 0)
+```c
+pid_t pid = fork();
+if (pid < 0)       { printf("fork başarısız!\\n"); return 1; }
+else if (pid == 0) { printf("CHILD: PID=%d, Parent=%d\\n", getpid(), getppid()); }
+else               { printf("PARENT: PID=%d, Child=%d\\n", getpid(), pid); }
+```
+Gerekli başlıklar: `<unistd.h>` (fork, getpid, getppid, exec, sleep), `<sys/types.h>` (pid_t), `<sys/wait.h>` (wait, WIFEXITED, WEXITSTATUS).
+
+**fork sonrası bellek:** child, parent'ın kod/veri/heap/stack'inin **kopyasını** alır; **ayrı bellek alanları** vardır.
+`int x = 100;` → fork → child `x = 200` yapar → child **200**, parent hâlâ **100** yazar. Biri değişince diğeri etkilenmez.
+
+**Process ağacı:** her process'in bir parent'ı vardır: `init/systemd (PID 1) → sshd → bash (3120) → ./program (4521), ps (4522)`.
+`ps -ef --forest` ağacı girintili gösterir (PPID sütunu parent'ın PID'i).
+
+#### 5. wait() — child process'i bekleme
+`wait(&status)` parent'ı **child bitene kadar bloke eder**; child bitince parent devam eder ve child'ın **çıkış durumunu** alır,
+biten child **toplanır (reap)** — kaynakları serbest kalır.
+```c
+int status;
+wait(&status);
+if (WIFEXITED(status))                       // normal mi bitti?
+    printf("child %d ile bitti\\n", WEXITSTATUS(status));   // return 42 → 42
+```
+**wait vs sleep:** `sleep(n)` kör bekleme — süreye bağlı, çocuk erken bitse de beklersin · `wait` akıllı bekleme — duruma bağlı, çocuk biter bitmez devam eder ve
+**çıkış kodunu verir**. Doğrusu `wait` veya `waitpid` kullanmak.
+
+#### 6. Zombi ve yetim process
+| | **Zombi (zombie)** | **Yetim (orphan)** |
+|---|---|---|
+| Durum | Çocuk öldü ama parent **wait() çağırmadı** | **Parent öldü**, çocuk yaşıyor |
+| Sonuç | Kaynak yok, sadece PID (süreç tablosu girdisi) kalır | **init (PID 1) evlat edinir** |
+| Gözlem | `ps`'te **`<defunct>`** görünür | Yeni **PPID = 1**, sistem çalışmaya devam eder |
+
+#### 7. exec() — program değiştirme
+`exec` ailesi (`execl`, `execv`, `execvp`…) mevcut process'in **programını tamamen değiştirir**: kod, veri, bellek yenisiyle değişir, **PID aynı kalır**.
+**Başarılı olursa geri DÖNMEZ** — exec'ten sonraki satır sadece exec **başarısız** olursa çalışır.
+```c
+printf("exec öncesi\\n");
+execl("/bin/ls", "ls", "-l", NULL);   // argüman listesi NULL ile biter
+printf("exec başarısız!\\n");          // sadece hata durumunda
+```
+Önce: PID 4521, çalışan bash → exec → Sonra: PID 4521, çalışan ls.
+
+#### 8. fork + exec + wait = klasik shell modeli
+Shell bir komutu şöyle çalıştırır: **parent fork() → child exec(ls) → parent wait(&status) → ls biter → parent devam eder.**
+```c
+pid_t pid = fork();
+if (pid == 0) { execl("/bin/ls", "ls", "-l", NULL); perror("exec başarısız"); return 1; }
+else          { int status; wait(&status); printf("Komut bitti, çıkış kodu: %d\\n", WEXITSTATUS(status)); }
+```
+**fork nerelerde kullanılır?** shell komutları (en yaygın) · sunucular — her bağlantı için bir child (Apache, nginx fork modu) · paralel veri işleme · test araçları (izole ortam).
+Web sunucusu: `accept` → `fork()`; child `close(server)`, `handle_client`, `exit(0)`; parent `close(client)` ve zombi kalmasın diye `waitpid(-1, NULL, WNOHANG)`.
+
+#### 9. Yaygın fork hataları
+1. **Dönüş değerini kontrol etmemek** — parent/child ayrımı yapılmazsa iki process aynı kodu çalıştırır.
+2. **Child'da exec'i unutmak** — child aynı programı çalıştırmaya devam eder.
+3. **Parent'ta wait'i unutmak** — **zombi process** oluşur.
+4. **Döngü içinde fork** — `for (int i = 0; i < 3; i++) fork();` → her turda process sayısı ikiye katlanır: **2³ = 8 process** (1 orijinal + 7 yeni).
+
+**Kod okuma alıştırması:** `printf("A"); fork(); printf("B"); fork(); printf("C");` → **1 A, 2 B, 4 C** (n fork → 2ⁿ process).
+*Not:* çıktı terminal yerine dosyaya/boruya yönlendirilirse printf tamponu fork'la kopyalandığından satırlar tekrar görünebilir; `fflush(stdout)` bunu önler.
+
+**Uygulama görevleri:** 1) parent/child PID karşılaştır · 2) fork sonrası bellek izolasyonu · 3) wait ile çıkış kodu · 4) exec ile başka program ·
+5) mini shell (fork + exec + wait) · 6) fork döngüsü kaç process yaratır?
+""",
+            "concepts": [
+                ("Process", "Çalışan program; kendi PID'i, belleği, PC'si, register'ları ve açık dosyaları vardır."),
+                ("PCB", "Kernel'in her process için tuttuğu kayıt: PID, durum, PC, register'lar, bellek, dosyalar, PPID, zamanlama."),
+                ("Concurrency", "Tek çekirdekte hızlı geçişlerle eşzamanlılık; gerçek paralellik çok çekirdekte."),
+                ("fork()", "Çağıranın kopyası olan child'ı yaratır; parent'ta child PID, child'da 0, hatada −1 döner."),
+                ("wait()", "Parent'ı child bitene kadar bloke eder; çıkış durumunu alır ve child'ı toplar."),
+                ("exec()", "Process'in programını değiştirir, PID aynı kalır; başarılıysa geri dönmez."),
+                ("Zombi", "Bitmiş ama parent'ı wait() yapmamış process; ps'te <defunct>."),
+                ("Yetim", "Parent'ı ölmüş process; init (PID 1) evlat edinir."),
+                ("WEXITSTATUS", "wait'ten gelen status içinden child'ın çıkış kodunu çıkarır."),
+            ],
+            "must": [
+                "Program statik (diskte), process dinamik (çalışan, PID'li)",
+                "PCB: PID, state, PC, register'lar, memory info, open files, PPID, scheduling info",
+                "Durumlar: new → ready → running → waiting / terminated; I/O done → READY'ye döner",
+                "Tek çekirdekte aynı anda 1 process çalışır (concurrency ≠ parallelism)",
+                "fork() dönüşü: parent'ta child PID (> 0), child'da 0, hata −1",
+                "fork sonrası bellek kopyadır: child'daki değişiklik parent'ı etkilemez",
+                "wait(&status) + WIFEXITED / WEXITSTATUS → çıkış kodu; wait yoksa zombi",
+                "Zombi: child öldü, parent wait yapmadı (<defunct>) · Yetim: parent öldü, PPID = 1",
+                "exec başarılıysa geri dönmez, PID değişmez",
+                "Shell modeli: fork + exec + wait · n kez fork → 2ⁿ process (for i<3 → 8)",
+            ],
+            "cheat": [
+                {"title": "Sistem çağrıları", "columns": ["Çağrı", "Ne yapar?", "Dönüş / not"], "rows": [
+                    ["fork()", "Çağıranın kopyası child'ı yaratır", "Parent: child PID · Child: 0 · Hata: −1"],
+                    ["getpid() / getppid()", "Kendi PID'i / parent'ın PID'i", "<unistd.h>"],
+                    ["wait(&status)", "Child bitene kadar bekler", "Biten child'ın PID'i; WEXITSTATUS(status) çıkış kodu"],
+                    ["waitpid(-1, NULL, WNOHANG)", "Beklemeden biten child'ları toplar", "Sunucularda zombi önleme"],
+                    ["execl(yol, ad, arg…, NULL)", "Programı değiştirir", "Başarılıysa dönmez; PID aynı"],
+                    ["sleep(n)", "n saniye kör bekleme", "Çıkış kodu vermez"]]},
+                {"title": "Process durum geçişleri", "columns": ["Geçiş", "Olay"], "rows": [
+                    ["NEW → READY", "admitted"], ["READY → RUNNING", "dispatch (zamanlayıcı seçti)"], ["RUNNING → READY", "interrupt (zaman dilimi bitti)"],
+                    ["RUNNING → WAITING", "I/O wait"], ["WAITING → READY", "I/O done"], ["RUNNING → TERMINATED", "exit"]]},
+                {"title": "Zombi vs yetim", "columns": ["", "Zombi", "Yetim"], "rows": [
+                    ["Kim öldü?", "Child", "Parent"], ["Neden?", "Parent wait() çağırmadı", "Parent child'dan önce bitti"],
+                    ["Belirti", "ps'te `<defunct>`", "PPID = 1 (init evlat edinir)"]]},
+                {"title": "fork sayma", "columns": ["Kod", "Process sayısı"], "rows": [
+                    ["fork(); (1 kez)", "2"], ["fork(); fork(); (2 kez)", "4 → A×1, B×2, C×4"], ["for (i = 0; i < 3; i++) fork();", "2³ = 8"],
+                    ["n kez fork", "2ⁿ (2ⁿ − 1 yeni)"]]},
+            ],
+            "images": [("c_program_process.jpg", "Program (statik) ≠ Process (dinamik) (Process.pdf s.4)"),
+                       ("c_pcb.jpg", "PCB — Process Control Block alanları (s.6)"),
+                       ("c_process_durumlari.jpg", "Process durum diyagramı (s.7)"),
+                       ("c_fork_bellek.jpg", "fork sonrası parent ve child'ın ayrı bellek kopyaları (s.13)"),
+                       ("c_wait_zaman.jpg", "wait(): parent child bitene kadar bloke olur (s.17)"),
+                       ("c_zombi_yetim.jpg", "Zombi ve yetim process (s.19)"),
+                       ("c_shell_modeli.jpg", "fork + exec + wait: klasik shell modeli (s.23)")],
+            "templates": ["c_fork_basit", "c_fork_pid", "c_fork_bellek", "c_wait", "c_exec", "c_fork_exec_wait", "c_fork_sayma"],
+        },
     ],
     "flashcards": [
         ("int/int sonucu?", "int — ondalık kısım atılır (10/3 = 3)."),
@@ -941,6 +1103,23 @@ Her satır: **`syscall_adı(argümanlar) = dönüş değeri`**. "Merhaba, dünya
         ("Statik ve dinamik bağlama farkı?", "Statik (-static): kütüphane dosyaya kopyalanır; dinamik: çalışırken libc.so.6 yüklenir (ldd listeler)."),
         ("nm'de D ve B harfleri?", "D: .data (başlatılmış global) · B: .bss (başlatılmamış global)."),
         ("fork ile exec farkı?", "fork yeni process yaratır; exec mevcut process'in programını değiştirir."),
+        ("PCB'de neler tutulur?", "PID, durum, program counter, CPU register'ları, bellek bilgisi, açık dosyalar, PPID, zamanlama bilgisi."),
+        ("Process durumları?", "new, ready, running, waiting, terminated."),
+        ("WAITING durumundaki process I/O bitince nereye geçer?", "READY (doğrudan RUNNING'e değil)."),
+        ("Tek çekirdekte aynı anda kaç process çalışır?", "1 — diğerleri READY; hızlı geçişle eşzamanlılık (concurrency)."),
+        ("fork() parent'ta, child'da ve hatada ne döndürür?", "Parent: child'ın PID'i (> 0) · Child: 0 · Hata: −1."),
+        ("fork'tan sonra child x'i değiştirirse parent'taki x?", "Değişmez — bellek kopyalanır, alanlar ayrıdır."),
+        ("wait(&status) ne yapar?", "Child bitene kadar parent'ı bekletir, çıkış durumunu alır, child'ı toplar."),
+        ("Child'ın çıkış kodunu hangi makro verir?", "WEXITSTATUS(status) (önce WIFEXITED ile kontrol)."),
+        ("Zombi process?", "Bitmiş ama parent'ı wait() çağırmamış child; ps'te <defunct>."),
+        ("Yetim process?", "Parent'ı ölmüş child; init (PID 1) evlat edinir, PPID = 1."),
+        ("exec başarılı olursa ne olur?", "Program değişir, PID aynı kalır, exec'ten geri dönülmez."),
+        ("Shell bir komutu nasıl çalıştırır?", "fork + exec + wait."),
+        ("for (i = 0; i < 3; i++) fork(); kaç process?", "2³ = 8."),
+        ("printf A; fork; printf B; fork; printf C → kaç A/B/C?", "1 A, 2 B, 4 C."),
+        ("wait ile sleep farkı?", "sleep süreye bağlı kör bekleme; wait child bitince döner ve çıkış kodunu verir."),
+        ("Parent'ta wait'i unutmanın sonucu?", "Zombi process."),
+        ("Process ağacını gösteren komut?", "ps -ef --forest (veya pstree)."),
     ],
 }
 
@@ -1272,4 +1451,74 @@ QUESTIONS = [
     {"week": "c-h3", "q": "`int sayac = 5;` ve `int toplam;` global değişkenleri ELF dosyasında sırasıyla hangi bölümlerde tutulur?",
      "options": [".text – .data", ".data – .bss", ".bss – .data", ".rodata – .text"], "answer": 1,
      "explain": "Başlatılmış global → .data (nm'de D) · başlatılmamış global → .bss (nm'de B, 0 ile başlar). Fonksiyon kodu .text'tedir."},
+    # ── Hafta 4: Process ──
+    {"week": "c-h4", "q": "Program ile process arasındaki fark hangisinde doğru verilmiştir?",
+     "options": ["Program çalışan koddur, process diskteki dosyadır", "Program diskteki statik dosyadır, process onun çalışan dinamik hâlidir",
+                 "İkisi aynı şeydir", "Process sadece kernel'da çalışan programdır"], "answer": 1,
+     "explain": "Program diskte duran dosya (./merhaba, statik); process çalışan program (PID'li, dinamik). Aynı program iki kez çalışırsa iki process olur."},
+    {"week": "c-h4", "q": "Aşağıdakilerden hangisi PCB (Process Control Block) içinde tutulan bilgilerden DEĞİLDİR?",
+     "options": ["Program Counter", "Parent PID (PPID)", "Programın kaynak kodu (.c dosyası)", "Açık dosyalar (stdin, stdout, fd)"], "answer": 2,
+     "explain": "PCB: PID, state, PC, CPU register'ları, bellek bilgisi, açık dosyalar, PPID, zamanlama bilgisi. Kaynak kod PCB'de yer almaz."},
+    {"week": "c-h4", "q": "Disk okuması bekleyen (WAITING) bir process'in okuma bittiğinde geçtiği durum hangisidir?",
+     "options": ["RUNNING", "READY", "NEW", "TERMINATED"], "answer": 1,
+     "explain": "I/O done → READY. CPU'ya tekrar zamanlayıcı (dispatch) ile geçer; doğrudan RUNNING'e gitmez."},
+    {"week": "c-h4", "q": "Çalışan (RUNNING) bir process'in zaman dilimi dolduğunda (interrupt) geçtiği durum hangisidir?",
+     "options": ["WAITING", "READY", "TERMINATED", "NEW"], "answer": 1,
+     "explain": "interrupt: RUNNING → READY. RUNNING → WAITING ise I/O beklerken olur."},
+    {"week": "c-h4", "q": "Tek çekirdekli bir CPU'da birden çok programın 'aynı anda' çalışıyor görünmesi nasıl açıklanır?",
+     "options": ["Gerçek paralellik (parallelism)", "Eşzamanlılık (concurrency): OS process'ler arasında hızla geçiş yapar",
+                 "Her process ayrı bir CPU'da çalışır", "Process'ler sırayla, biri bitmeden diğeri başlamaz"], "answer": 1,
+     "explain": "Tek çekirdekte bir anda yalnız 1 process çalışır; OS saniyede yüzlerce kez değiştirir. Gerçek paralellik çok çekirdekte mümkündür."},
+    {"week": "c-h4", "q": "pid_t pid = fork(); satırından sonra CHILD process'te pid değişkeninin değeri nedir?",
+     "options": ["Child'ın kendi PID'i", "Parent'ın PID'i", "0", "−1"], "answer": 2,
+     "explain": "fork child'da 0, parent'ta child'ın PID'ini (> 0), hata durumunda −1 döndürür. Child kendi PID'ini getpid() ile öğrenir."},
+    {"week": "c-h4", "q": "fork() çağrısı −1 döndürürse bu ne anlama gelir?",
+     "options": ["Child process oluşturuldu", "Kod child'da çalışıyor", "fork başarısız oldu, yeni process oluşmadı", "Parent sonlandı"], "answer": 2,
+     "explain": "pid < 0 → hata (örn. process sınırı). Bu yüzden slayttaki örnek önce if (pid < 0) kontrol eder."},
+    {"week": "c-h4", "q": "Aşağıdaki kod çalıştırıldığında ekrana kaç satır 'fork'tan sonra' yazılır?", "lang": "c",
+     "code": "printf(\"fork'tan önce\\n\");\npid_t pid = fork();\nprintf(\"fork'tan sonra\\n\");",
+     "options": ["1", "2", "3", "4"], "answer": 1,
+     "explain": "fork'tan sonra iki process (parent + child) vardır ve ikisi de sonraki satırdan devam eder → 2 kez."},
+    {"week": "c-h4", "q": "int x = 100; fork sonrası child x = 200 yapıp yazdırıyor, parent 1 saniye bekleyip x'i yazdırıyor. Çıktı nedir?",
+     "options": ["CHILD: x=200, PARENT: x=200", "CHILD: x=200, PARENT: x=100", "CHILD: x=100, PARENT: x=100", "CHILD: x=100, PARENT: x=200"], "answer": 1,
+     "explain": "fork belleği kopyalar; child kendi kopyasını değiştirir. Parent'taki x 100 kalır (ayrı bellek alanları)."},
+    {"week": "c-h4", "q": "Aşağıdaki programın çıktısı nedir?", "lang": "c",
+     "code": "pid_t pid = fork();\nif (pid == 0) {\n    return 42;\n} else {\n    int status;\n    wait(&status);\n    if (WIFEXITED(status))\n        printf(\"%d\\n\", WEXITSTATUS(status));\n}",
+     "options": ["0", "42", "Child'ın PID'i", "Hiçbir şey"], "answer": 1,
+     "explain": "Child 42 ile çıkar; parent wait ile bekler ve WEXITSTATUS(status) çıkış kodunu (42) verir.",
+     "run": c_prog('pid_t pid = fork();\nif (pid == 0) {\n    return 42;\n} else {\n    int status;\n    wait(&status);\n    if (WIFEXITED(status))\n        printf("%d\\n", WEXITSTATUS(status));\n}', ("stdio.h", "unistd.h", "sys/wait.h")), "expect": "42"},
+    {"week": "c-h4", "q": "Aşağıdaki programın çıktısı nedir? (child önce yazar, parent wait ile bekler)", "lang": "c",
+     "code": "int x = 100;\npid_t pid = fork();\nif (pid == 0) {\n    x = 200;\n    printf(\"C %d\\n\", x);\n    return 0;\n}\nwait(NULL);\nprintf(\"P %d\\n\", x);",
+     "options": ["C 200 / P 200", "C 200 / P 100", "P 100 / C 200", "C 100 / P 100"], "answer": 1,
+     "explain": "wait, parent'ı child bitene kadar bekletir → önce 'C 200'. Bellek kopyalandığı için parent'taki x 100 kalır.",
+     "run": c_prog('int x = 100;\npid_t pid = fork();\nif (pid == 0) {\n    x = 200;\n    printf("C %d\\n", x);\n    return 0;\n}\nwait(NULL);\nprintf("P %d\\n", x);', ("stdio.h", "unistd.h", "sys/wait.h")), "expect": "C 200\nP 100"},
+    {"week": "c-h4", "q": "Child process bitmiş ancak parent wait() çağırmamışsa child hangi duruma düşer?",
+     "options": ["Yetim (orphan)", "Zombi (zombie)", "READY", "Daemon"], "answer": 1,
+     "explain": "Zombi: kaynakları yok, sadece PID/süreç tablosu girdisi kalır; ps'te <defunct> görünür. Önlemek için wait/waitpid."},
+    {"week": "c-h4", "q": "Parent process child'dan önce sonlanırsa child için ne olur?",
+     "options": ["Child da hemen sonlanır", "Zombi olur", "Yetim olur ve init (PID 1) tarafından evlat edinilir", "PID'i 0 olur"], "answer": 2,
+     "explain": "Yetim (orphan): child çalışmaya devam eder, yeni PPID = 1 (init/systemd)."},
+    {"week": "c-h4", "q": "execl(\"/bin/ls\", \"ls\", \"-l\", NULL); başarılı olursa aşağıdakilerden hangisi doğrudur?",
+     "options": ["Yeni bir PID ile yeni process oluşur", "exec'ten sonraki printf satırı çalışır",
+                 "Process'in programı ls ile değişir, PID aynı kalır ve exec geri dönmez", "Parent process sonlanır"], "answer": 2,
+     "explain": "exec mevcut process'in kod/veri/belleğini yeni programla değiştirir; PID değişmez. Sonraki satıra sadece exec başarısız olursa gelinir."},
+    {"week": "c-h4", "q": "Bir shell (bash) kullanıcının yazdığı komutu çalıştırmak için hangi üçlüyü kullanır?",
+     "options": ["fork + exec + wait", "exec + fork + sleep", "getpid + exec + exit", "wait + fork + kill"], "answer": 0,
+     "explain": "Parent fork() eder, child exec ile komutu yükler, parent wait ile bitmesini bekler ve çıkış kodunu alır."},
+    {"week": "c-h4", "q": "for (int i = 0; i < 3; i++) fork(); kodu sonunda toplam kaç process olur (orijinal dahil)?",
+     "options": ["3", "4", "6", "8"], "answer": 3,
+     "explain": "Her fork process sayısını ikiye katlar: 2³ = 8 (1 orijinal + 7 yeni)."},
+    {"week": "c-h4", "q": "printf(\"A\"); fork(); printf(\"B\"); fork(); printf(\"C\"); kodunda (terminale yazarken) kaç A, B, C yazılır?",
+     "options": ["1 A, 2 B, 3 C", "1 A, 2 B, 4 C", "2 A, 2 B, 4 C", "1 A, 1 B, 1 C"], "answer": 1,
+     "explain": "A fork'tan önce (1 process), B ilk fork'tan sonra (2 process), C ikinci fork'tan sonra (4 process)."},
+    {"week": "c-h4", "q": "wait() ile sleep() karşılaştırmasında hangisi doğrudur?",
+     "options": ["sleep child bitince döner ve çıkış kodunu verir", "wait süreye bağlıdır, sleep duruma bağlıdır",
+                 "wait child biter bitmez döner ve çıkış kodunu almayı sağlar; sleep kör beklemedir", "İkisi de aynı işi yapar"], "answer": 2,
+     "explain": "sleep(n) n saniye bekler (çocuk erken bitse bile); wait duruma bağlıdır ve status ile çıkış kodunu verir. Doğrusu wait/waitpid."},
+    {"week": "c-h4", "q": "fork tabanlı bir web sunucusunda parent'ın döngüde waitpid(-1, NULL, WNOHANG) çağırmasının amacı nedir?",
+     "options": ["Yeni istemci kabul etmek", "Biten child'ları bloke olmadan toplayıp zombi oluşmasını önlemek", "Child'ı öldürmek", "Socket'i kapatmak"], "answer": 1,
+     "explain": "WNOHANG beklemeden döner; biten child'lar toplanır (reap), zombi birikmez."},
+    {"week": "c-h4", "q": "wait() ve WEXITSTATUS makrosu hangi başlık dosyasında tanımlıdır?",
+     "options": ["<stdio.h>", "<unistd.h>", "<sys/wait.h>", "<string.h>"], "answer": 2,
+     "explain": "wait/waitpid, WIFEXITED, WEXITSTATUS → <sys/wait.h>. fork, getpid, exec, sleep → <unistd.h>; pid_t → <sys/types.h>."},
 ]

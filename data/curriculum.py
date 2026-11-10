@@ -6,13 +6,13 @@ ve sorulara kalıcı kimlik (id) atanır. Kimlikler ilerleme dosyasında (yanlı
 
 from datetime import date
 
-from . import course_ag, course_bt, course_c, course_cs, course_donanim
+from . import course_ag, course_bt, course_c, course_cs, course_donanim, course_mat
 from .code_templates import BY_ID as TEMPLATES_BY_ID
 from .code_templates import TEMPLATES
 
 EXAM_START = date(2026, 11, 9)
 
-_MODULES = [course_bt, course_donanim, course_ag, course_c, course_cs]
+_MODULES = [course_bt, course_donanim, course_ag, course_c, course_cs, course_mat]
 
 COURSES = []
 QUESTIONS = []
