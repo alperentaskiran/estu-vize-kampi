@@ -5,7 +5,7 @@
 
 | Ders | Kaynak | Hafta | Soru | Kart |
 |---|---|---|---|---|
-| 🖥️ Bilgi Teknolojileri (Erkut Bölükbaş) | 1–4.hafta PDF | 4 | 39 | 25 |
+| 🖥️ Bilgi Teknolojileri (Erkut Bölükbaş) | 1–4.hafta PDF, 5.Hafta-html | 5 | 78 | 48 |
 | 🧮 BTP239 · Bilgisayar Donanımı | BTP239_Hafta01–03, dönüşümler, btp239_Islemci | 5 | 95 | 49 |
 | 🌐 Bilgisayar Ağları (Cisco BNET) | hafta_1…7, Erişim Katmanı, PDU docx, kapsülleme PNG | 7 | 74 | 41 |
 | ⚙️ İşletim Sistemleri ve Güvenliği (C) | Hafta01/02_C_Giris, Hafta03_OS, Process, C_Programlamaya_Giris_Kapsamli, output (ders notu) | 4 | 108 | 63 |

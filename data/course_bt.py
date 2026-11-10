@@ -1,6 +1,6 @@
-"""Bilgi Teknolojileri (Öğr. Gör. Erkut BÖLÜKBAŞ) — 1.–4. hafta.
+"""Bilgi Teknolojileri (Öğr. Gör. Erkut BÖLÜKBAŞ) — 1.–5. hafta.
 
-Kaynaklar: 1.hafta.pdf, 2.hafta.pdf, 3.hafta.pdf, 4.hafta-ag.pdf (159 sayfa, görüntü tabanlı;
+Kaynaklar: 1.hafta.pdf, 2.hafta.pdf, 3.hafta.pdf, 4.hafta-ag.pdf, 5.Hafta-html.pdf (4.hafta 159 sayfa, görüntü tabanlı;
 slaytlar görsel olarak okunup aktarıldı).
 """
 
@@ -11,7 +11,7 @@ COURSE = {
     "icon": "🖥️",
     "color": "#38bdf8",
     "teacher": "Öğr. Gör. Erkut BÖLÜKBAŞ",
-    "sources": ["1.hafta.pdf", "2.hafta.pdf", "3.hafta.pdf", "4.hafta-ag.pdf"],
+    "sources": ["1.hafta.pdf", "2.hafta.pdf", "3.hafta.pdf", "4.hafta-ag.pdf", "5.Hafta-html.pdf"],
     "weeks": [
         {
             "id": "bt-h1",
@@ -354,6 +354,221 @@ Nesiller: 1G analog · 2G GSM dijital ses/SMS · 3G UMTS · 4G LTE (VoLTE) · **
                        ("bt_kablosuz_ag_turleri.jpg", "Kablosuz ağ türleri karşılaştırması: WPAN, WLAN, WMAN, WWAN (4.hafta-ag.pdf s.156)")],
             "templates": [],
         },
+        {
+            "id": "bt-h5",
+            "title": "5. Hafta — HTML Temelleri ve Uygulamalar (etiketler, CSS stilleri, liste, resim, tablo, link, form)",
+            "sources": ["5.Hafta-html.pdf"],
+            "summary": """
+#### 1. HTML nedir?
+**HTML (HyperText Markup Language) — Hiper Metin İşaretleme Dili:** web sayfalarının **içeriğini ve temel yapısını** oluşturan **işaretleme dilidir**.
+* Başlık, paragraf, resim, bağlantı, liste ve tablolar **HTML etiketleriyle** tanımlanır.
+* **HTML bir programlama dili DEĞİLDİR**; içeriğin nasıl düzenleneceğini ve ne anlama geldiğini belirtir.
+* Dosyalar **.html veya .htm** uzantılıdır; Chrome, Firefox gibi tarayıcılarda görüntülenir. **HTML5** ile modern özellikler geldi; standart gelişmeye devam ediyor.
+* Not Defteri, Visual Studio Code, Notepad++ gibi **metin editörleriyle** yazılır.
+
+#### 2. Web sitesi nasıl yayınlanır? (Alan adı, IP, DNS, hosting)
+* **Alan adı (domain):** web sitesine ulaşmayı sağlayan **kolay hatırlanabilir adres** (www.google.com, www.eskisehir.edu.tr). Kayıt firmasından **kaydettirilir**,
+  daha önce alınmamış olmalı, **belirli süreler için** kaydedilir ve **yenilenmesi** gerekir. Basit sayfa/ücretsiz yayın için zorunlu değildir.
+* **IP adresi:** ağdaki cihazların tanınmasını ve iletişimini sağlayan **sayısal adres**. **IPv4:** noktalarla ayrılmış **dört sayı, her biri 0–255** (192.168.123.254).
+  Daha geniş kapasiteli **IPv6** da kullanılır. Benzetme: evin posta adresi.
+* **DNS (Domain Name System – Alan Adı Sistemi):** **alan adlarını IP adresleriyle eşleştirir**. www.meb.gov.tr yazınca: 1) tarayıcı DNS ile IP'yi öğrenir →
+  2) sunucuya bağlanır → 3) gelen sayfa görüntülenir.
+* **Uzantılar:** **.com** (commercial – ticari, bugün herkes) · **.edu** (eğitim, Türkiye'de .edu.tr) · **.gov** (devlet, .gov.tr) · **.org** (organization – başlangıçta ticari olmayan) ·
+  **.net** (network). **Ülke kodları** (iki harf): **.tr** Türkiye, **.uk** Birleşik Krallık, **.jp** Japonya, **.it** İtalya, **.ch** İsviçre.
+  .com/.org/.net sitenin kuruluş türünü **kesin göstermez**.
+* **Hosting (barındırma):** site dosyalarının internetten erişilebilir olması için **bir sunucuda saklanması** hizmeti. Sunucular genelde **7/24** çalışır; ücretli/ücretsiz olabilir,
+  kendi bilgisayarımız da (ağ/güvenlik ayarlarıyla) sunucu olabilir.
+  **Alan adı = adres, hosting = dosyaların saklandığı yer** (mağaza adresi ↔ mağazanın fiziksel alanı).
+
+#### 3. Gerekenler ve kaynak kodu görme
+* **Metin editörü** (Not Defteri; VS Code/Notepad++ renklendirme, otomatik tamamlama, hata tespiti) + **web tarayıcısı** (HTML'i yorumlayıp gösterir: Chrome, Firefox, Edge).
+* **Sayfa Kaynağını Görüntüle (Ctrl + U):** sunucudan gelen HTML kaynak kodu.
+* **İncele (F12):** geliştirici araçları — HTML yapısı ve CSS; **geçici** değişiklik yapılabilir, **sadece kendi tarayıcında** görünür, sayfa yenilenince kaybolur, sitenin gerçek dosyaları değişmez.
+
+#### 4. İlk HTML dosyası
+Klasör oluştur → editöre kodu yaz → **index.html** adıyla kaydet (Not Defteri'nde kayıt türü **Tüm Dosyalar**, kodlama **UTF-8**) → çift tıkla.
+Dikkat: yanlışlıkla **index.html.txt** olarak kaydedilirse tarayıcıda beklendiği gibi açılmaz.
+```html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>İlk Sayfam</title>
+</head>
+<body>
+    <h1>Merhaba Dünya!</h1>
+    <p>Bu benim ilk HTML sayfam.</p>
+</body>
+</html>
+```
+* `<!DOCTYPE html>`: **belge türü bildirimi**, en başta; tarayıcıya **HTML5** olduğunu söyler; **HTML etiketi değildir, kapanışı yoktur**.
+* `<html lang="tr">`: belgenin başlangıcı/bitişi; `lang="tr"` sayfa dilinin Türkçe olduğunu belirtir.
+* `<head>`: başlık, karakter kodlaması gibi **teknik bilgiler** (görünen içerikte yer almaz). `<meta charset="UTF-8">` **Türkçe karakterlerin** doğru görünmesini sağlar.
+* `<title>`: `<head>` içinde; **tarayıcı sekmesinde** görünen başlık. · `<body>`: sayfada **görüntülenen** içerik.
+
+#### 5. Etiketler ve temel öğeler
+* Etiketler `<` ve `>` arasına yazılır; çoğu **açılış** `<p>` ve **kapanış** `</p>` (adın önünde **/**) etiketinden oluşur; arası **içerik**. Genel: `<etiket_adi>İçerik</etiket_adi>`.
+* Etiketler genellikle **büyük/küçük harfe duyarlı değildir** (`<p>` = `<P>`); okunabilirlik için **küçük harf** önerilir.
+* **Kapanışı olmayan** etiketler: `<br>` (satır atla), `<img>` (resim), `<hr>` (yatay çizgi).
+* **Başlıklar `<h1>`–`<h6>`:** altı seviye; `<h1>` en üst düzey ve **en büyük**, `<h6>` en küçük. Yalnızca boyut değil **önem sırası/hiyerarşi** belirtir;
+  arama motorları ve ekran okuyucular için önemlidir. Öncesinde/sonrasında varsayılan boşluk bırakılır (CSS ile değişir).
+* **Paragraf `<p>`:** her `<p>` yeni paragraf; aralarda varsayılan boşluk. Kaynak koddaki **birden fazla boşluk ve satır sonu tek boşluk** sayılır.
+* **Satır atlama `<br>`:** aynı paragrafta alt satıra geçer, **kapanışı yok**; HTML5'te `<br>` yeterli, `<br />` da geçerli. Adres, şiir, şarkı sözünde kullanılır.
+
+| `<p>` | `<br>` |
+|---|---|
+| Yeni paragraf oluşturur | Aynı paragrafta alt satıra geçirir |
+| Paragraflar arasında varsayılan boşluk var | Ek paragraf boşluğu oluşturmaz |
+| Açılış ve kapanış etiketi var | Kapanış etiketi yok |
+
+* **Yorum:** `<!-- açıklama -->` — tarayıcıda **görüntülenmez**; kodu açıklamak veya bir kodu geçici devre dışı bırakmak için.
+
+#### 6. Nitelikler (attributes) ve CSS ile stil
+* Nitelikler etiketlere ek özellik kazandırır; **her zaman açılış etiketinin içinde**, **nitelik="değer"** biçiminde (tırnak önerilir); birden fazla kullanılabilir;
+  bazıları (**required, disabled**) değersiz kullanılır.
+* **style** niteliği öğeye **CSS** ekler. **CSS (Cascading Style Sheets – Basamaklı Stil Şablonları):** HTML yapıyı/içeriği, **CSS görünümü** belirler.
+* `<h1 style="text-align: center;">` → başlık ortalanır. Eski `align="center"` ve **`<font>` etiketi artık önerilmez**, yerine CSS.
+
+| CSS özelliği | Görevi | Örnek |
+|---|---|---|
+| font-size | Yazı boyutu | `style="font-size: 24px;"` (eski: `<font size="5">`) |
+| color | **Metin** rengi | `style="color: red;"` |
+| background-color | **Arka plan** rengi (body'de tüm sayfa) | `<body style="background-color: yellow;">` |
+| font-family | Yazı tipi; ilki yoksa sıradakini dener | `font-family: Verdana, Arial, sans-serif;` |
+| text-align | Hizalama: left, right, center, justify | `style="text-align: justify;"` |
+
+* **Renk tanımlama:** İngilizce isim (red, blue, lightblue) · **HEX:** **#** + 6 karakter, ilk iki **kırmızı**, sonraki iki **yeşil**, son iki **mavi** (**#FF0000** kırmızı, **#00FF00** yeşil, **#0000FF** mavi) ·
+  **RGB:** her bileşen **0–255** (**rgb(255, 0, 0)** kırmızı). **#A41A1B = rgb(164, 26, 27)** aynı renk (A4 = 164, 1A = 26, 1B = 27).
+* **justify** iki yana yaslar (kelime boşluklarını ayarlar, etkisi çok satırlı metinde görülür); Türkçe gibi soldan sağa dillerde varsayılan **left**.
+
+#### 7. Biçimlendirme etiketleri
+| Etiket | Ne yapar? |
+|---|---|
+| `<strong>` | Önemli metin, genellikle **kalın** |
+| `<em>` | Vurgu, genellikle *italik* |
+| `<sub>` | **Alt** simge: H`<sub>`2`</sub>`O → H₂O |
+| `<sup>` | **Üst** simge: 8`<sup>`2`</sup>` → 8² |
+| `<ins>` | Eklenen metin, altı çizili |
+| `<s>` | Geçerliliğini yitirmiş metin, üstü çizili |
+| `<hr>` | Yatay ayırıcı çizgi (kapanışı yok) |
+| `<mark>` | Arka plan rengiyle vurgulama |
+| `<abbr title="Birleşmiş Milletler">BM</abbr>` | Kısaltmaya açıklama |
+| `<pre>` | **Boşlukları ve satır sonlarını korur** |
+
+#### 8. Listeler
+* **Sırasız liste `<ul>`** (unordered list) + **`<li>`** (list item): varsayılan **nokta (•)**; sırası olmayan ürün/özellik listeleri. `type="square"` kare, `type="circle"` daire.
+* **Sıralı liste `<ol>`** (ordered list): varsayılan **1, 2, 3…**; işlem adımları, yönergeler.
+  * **start:** numaralandırmanın başlangıcı — `<ol start="3">` 3'ten başlar.
+  * **type:** `"1"` sayı · `"A"` büyük harf · `"a"` küçük harf · `"I"` büyük Roma · `"i"` küçük Roma.
+* **İç içe liste:** bir `<li>` içine yeni `<ul>`/`<ol>` yazılır (Peynir → Beyaz peynir, Kaşar peyniri; Kimya → a. Organik, b. İnorganik).
+
+#### 9. Resimler
+`<img src="manzara.jpg" alt="Doğa manzarası">` — **kapanışı yok** (`</img>` yazılmaz).
+* **src (source):** dosya yolu/adres. Aynı klasör `"fil.gif"` · alt klasör `"yemekler/kurufasulye.jpg"` · internet `"https://siteadi.com/resim.jpg"` · **bir üst klasör `"../fil.gif"`**.
+  Yol yanlışsa veya dosya yoksa resim görünmez.
+* **alt:** **alternatif metin** — resim yüklenemezse gösterilir; **ekran okuyucu** kullanan görme engellilere yardım eder. Fare üzerine gelince ipucu göstermek **title**'ın işidir, alt'ın değil.
+* **width / height:** piksel (`width="300" height="200"`); orantısız değiştirmek görüntüyü bozar → oranı korumak için sadece width verilebilir.
+* **float** (CSS): `style="float: right; width: 200px; margin-left: 15px;"` → resim sağa, metin solundan akar.
+
+#### 10. Tablolar
+| Etiket | Görevi |
+|---|---|
+| `<table>` | Tablonun başı/sonu |
+| `<tr>` | Yeni **satır** (table row) |
+| `<td>` | **Veri hücresi** (table data) |
+| `<th>` | **Başlık hücresi**, genellikle kalın ve ortalı |
+| `<thead>` / `<tbody>` | Başlık bölümü / veri satırları grubu |
+
+* **colspan:** hücre **birden fazla sütuna** yayılır (`<th colspan="2">DERS NOTLARI</th>`) · **rowspan:** **birden fazla satıra** yayılır (`<td rowspan="3">FEN BİLİMLERİ</td>`).
+* CSS: **border** (kenarlık), width/height, background-color/image, **padding** (hücre içi boşluk), **border-spacing** (hücreler arası boşluk), **border-collapse** (komşu kenarlıkları birleştirir).
+  Eski **cellpadding, cellspacing** önerilmez.
+* **Uygulama — haftalık ders programı:** başlık "Haftalık Ders Programım", **3 sütun × 6 satır** (1 başlık satırı + 5 gün), başlıklar `<th>` (Gün, Ders Adı, Saat), diğerleri `<td>`, kenarlık görünür.
+
+#### 11. Bağlantılar (linkler)
+`<a href="https://www.google.com">Google'a Git</a>` — **a = anchor**, **href = Hypertext Reference** (hedef adres). Varsayılan görünüm mavi ve altı çizili.
+* **target:** `_self` mevcut sekme (**varsayılan**) · `_blank` **yeni sekme**.
+* Başka sayfa `href="hakkimda.html"` · resim `href="fotograf.jpg" target="_blank"` · PDF `href="ders-notlari.pdf"` · **tıklanabilir resim:** `<a href="…"><img src="logo.png" …></a>`.
+* **Sayfa içi bağlantı:** hedefe **id** verilir (`<h2 id="iletisim">`), link `href="#iletisim"`; `#`'ten sonraki ad ile **id aynı olmalı** ("Başa Dön": `href="#baslangic"`).
+
+#### 12. Formlar
+`<form>` formun başı/sonu · `<label for="ad">` alanın amacını belirtir · `<input type="text" id="ad" name="ad">` · **name:** gönderildiğinde alanın adı.
+
+| Nitelik / tür | Görevi |
+|---|---|
+| type="text" | Tek satırlık metin kutusu |
+| type="password" | Girilen karakterleri **gizler** |
+| type="email" | E-posta adresi |
+| placeholder | Kutunun içinde **yol gösterici ipucu** (girilmiş değer değildir) |
+| value | **Başlangıç değeri** (`value="Eskişehir"`); submit butonunda **buton yazısı** |
+| required | Alanı **zorunlu** kılar (tarayıcı kontrol eder) |
+| maxlength | Karakter sayısını sınırlar |
+
+* `<textarea rows="4" cols="30">` çok satırlı metin; **rows** görünür satır sayısı, **cols** yaklaşık karakter genişliği.
+* **checkbox:** **birden fazla** seçim · **radio:** gruptan **yalnızca bir** seçim — aynı gruptakilerin **name değeri aynı olmalı** · **select + option:** açılır liste.
+* `<input type="submit" value="Gönder">` gönder butonu · **action:** verilerin gönderileceği adres (`action="/kayit"`) · **method:**
+  **GET** verileri **URL'nin sorgu bölümüne** ekler (arama) · **POST** verileri **HTTP isteğinin gövdesinde** gönderir (kayıt).
+* **HTML sadece formun görünümünü oluşturur; verileri kaydetmek/işlemek için sunucu tarafında çalışan bir sistem gerekir.**
+* **Uygulama — öğrenci kayıt formu:** Ad Soyad (text), E-posta (email), Şifre (password) — bu üçü **required**; Sınıf (radio, 1/2), İlgi Alanları (checkbox: Oyun, Müzik, Spor),
+  Şehir (select: Eskişehir, Ankara, İstanbul), Hakkımda (textarea), Gönder (submit); her alanın label'ı olmalı.
+""",
+            "concepts": [
+                ("HTML", "HyperText Markup Language; programlama dili değil, işaretleme dili."),
+                ("DNS", "Alan adlarını IP adresleriyle eşleştiren sistem."),
+                ("Hosting", "Site dosyalarını internetten erişilebilir bir sunucuda barındırma hizmeti."),
+                ("<!DOCTYPE html>", "Belge türü bildirimi (HTML5); etiket değil, kapanışı yok."),
+                ("<head> / <body>", "Teknik bilgiler (title, meta) / sayfada görünen içerik."),
+                ("Nitelik", "Açılış etiketine yazılan nitelik=\"değer\" ek özelliği (src, href, style)."),
+                ("CSS", "Cascading Style Sheets; görünümü belirler (color, font-size, text-align)."),
+                ("alt", "Resim yüklenmezse görünen, ekran okuyucuların okuduğu alternatif metin."),
+                ("colspan / rowspan", "Hücreyi birden çok sütuna / satıra yayar."),
+                ("target=\"_blank\"", "Bağlantıyı yeni sekmede açar (varsayılan _self)."),
+                ("GET / POST", "Veriyi URL sorgusunda / HTTP isteğinin gövdesinde gönderir."),
+                ("radio / checkbox", "Gruptan tek seçim (aynı name) / birden çok seçim."),
+            ],
+            "must": [
+                "HTML = HyperText Markup Language, programlama dili DEĞİL; uzantı .html / .htm",
+                "Alan adı = adres · IP (IPv4: 4 sayı, 0–255) · DNS: alan adı → IP · Hosting: dosyaların saklandığı sunucu",
+                ".com ticari · .edu eğitim · .gov devlet · .org kuruluş · .net ağ · .tr .uk .jp .it .ch",
+                "Ctrl + U kaynak kodu · F12 İncele (değişiklikler geçici, sadece kendi tarayıcında)",
+                "<!DOCTYPE html> etiket değil · <title> sekmede görünür · <meta charset=\"UTF-8\"> Türkçe karakter",
+                "Kapanışı olmayanlar: <br>, <img>, <hr>",
+                "<h1> en büyük/en önemli, <h6> en küçük; <p> paragraf, <br> satır atlama",
+                "Yorum <!-- ... --> görünmez",
+                "color metin, background-color arka plan; HEX #RRGGBB (#FF0000 kırmızı), RGB 0–255",
+                "<ol> type: 1, A, a, I, i · start=\"3\" · <ul> nokta",
+                "<img src alt>: alt = alternatif metin (ekran okuyucu); ../ bir üst klasör",
+                "<table> <tr> satır, <td> veri, <th> başlık; colspan sütun, rowspan satır birleştirir",
+                "<a href> · target=\"_blank\" yeni sekme · href=\"#id\" sayfa içi bağlantı",
+                "password gizler · placeholder ipucu · value başlangıç değeri · required zorunlu · maxlength sınır",
+                "Radio: aynı name, tek seçim · checkbox çoklu · GET URL'de, POST gövdede",
+            ],
+            "cheat": [
+                {"title": "Temel sayfa iskeleti", "columns": ["Etiket", "Görev"], "rows": [
+                    ["`<!DOCTYPE html>`", "HTML5 belge türü bildirimi (etiket değil)"], ["`<html lang=\"tr\">`", "Belgenin başı/sonu, dil"],
+                    ["`<head>`", "Teknik bilgiler (görünmez)"], ["`<meta charset=\"UTF-8\">`", "Türkçe karakter desteği"],
+                    ["`<title>`", "Tarayıcı sekmesindeki başlık"], ["`<body>`", "Görünen içerik"]]},
+                {"title": "Sık etiketler", "columns": ["Etiket", "Görev", "Kapanış"], "rows": [
+                    ["`<h1>`–`<h6>`", "Başlık (h1 en büyük)", "Var"], ["`<p>`", "Paragraf", "Var"], ["`<br>`", "Satır atlama", "Yok"],
+                    ["`<hr>`", "Yatay çizgi", "Yok"], ["`<img>`", "Resim (src, alt, width, height)", "Yok"], ["`<a>`", "Bağlantı (href, target)", "Var"],
+                    ["`<ul>` / `<ol>` / `<li>`", "Sırasız / sıralı liste / madde", "Var"], ["`<table>` `<tr>` `<td>` `<th>`", "Tablo / satır / veri / başlık", "Var"],
+                    ["`<form>` `<input>` `<textarea>` `<select>`", "Form öğeleri", "input'ta yok"]]},
+                {"title": "CSS (style niteliği)", "columns": ["Özellik", "Örnek değer"], "rows": [
+                    ["color", "red · #A41A1B · rgb(164, 26, 27)"], ["background-color", "yellow · lightblue"], ["font-size", "24px"],
+                    ["font-family", "Verdana, Arial, sans-serif"], ["text-align", "left · right · center · justify"], ["float", "right / left (resmin yanında metin akışı)"]]},
+                {"title": "Form alanları", "columns": ["Kod", "Sonuç"], "rows": [
+                    ["type=\"text\" / \"email\" / \"password\"", "Metin / e-posta / gizli karakterli"], ["type=\"checkbox\"", "Çoklu seçim"],
+                    ["type=\"radio\" (aynı name)", "Tekli seçim"], ["`<select>` + `<option>`", "Açılır liste"], ["`<textarea rows cols>`", "Çok satırlı metin"],
+                    ["type=\"submit\" value=\"Gönder\"", "Gönder butonu"], ["method=\"get\" / \"post\"", "URL sorgusu / istek gövdesi"]]},
+                {"title": "Liste type değerleri", "columns": ["type", "Görünüm"], "rows": [
+                    ["1", "1, 2, 3"], ["A", "A, B, C"], ["a", "a, b, c"], ["I", "I, II, III"], ["i", "i, ii, iii"], ["ul: square / circle", "■ / ○"]]},
+            ],
+            "images": [("bt_html_ul_type.jpg", "Sırasız listede type=\"square\" ve type=\"circle\" (5.Hafta-html s.42)"),
+                       ("bt_html_ic_ice_liste.jpg", "İç içe liste örneği (s.43)"),
+                       ("bt_html_tablo.jpg", "2 satır × 3 sütunlu tablo: thead, tbody, th, td (s.55)"),
+                       ("bt_html_rowspan.jpg", "rowspan=\"3\": hücre üç satıra yayılır (s.58)"),
+                       ("bt_html_colspan.jpg", "colspan=\"2\": başlık iki sütuna yayılır (s.59)")],
+            "templates": [],
+        },
     ],
     "flashcards": [
         ("Veri mi, enformasyon mu? 'Ortalama 70,8; en yüksek 92'", "Enformasyon — işlenmiş, bağlama oturtulmuş veri."),
@@ -381,6 +596,29 @@ Nesiller: 1G analog · 2G GSM dijital ses/SMS · 3G UMTS · 4G LTE (VoLTE) · **
         ("CAT5 maksimum mesafe?", "100 metre."),
         ("Görüş hattı gerektiren kablosuz teknoloji?", "Kızılötesi (IR / IrDA)."),
         ("Sadece 5 GHz çalışan Wi‑Fi standardı?", "802.11ac (Wi‑Fi 5)."),
+        ("HTML'in açılımı ve türü?", "HyperText Markup Language — işaretleme dili, programlama dili değil."),
+        ("DNS ne yapar?", "Alan adlarını IP adresleriyle eşleştirir."),
+        ("Alan adı ile hosting farkı?", "Alan adı sitenin adresi; hosting dosyaların saklandığı sunucu hizmeti."),
+        ("IPv4 adresinin yapısı?", "Noktalarla ayrılmış 4 sayı, her biri 0–255 (192.168.123.254)."),
+        ("Ctrl + U ve F12?", "Sayfa kaynağını görüntüle / İncele (geliştirici araçları)."),
+        ("<!DOCTYPE html> nedir?", "HTML5 belge türü bildirimi; HTML etiketi değil, kapanışı yok."),
+        ("<title> nerede görünür?", "Tarayıcı sekmesinde; <head> içinde yazılır."),
+        ("<meta charset=\"UTF-8\"> ne işe yarar?", "Türkçe karakterlerin doğru görüntülenmesini sağlar."),
+        ("Kapanış etiketi olmayan etiketler?", "<br>, <img>, <hr>."),
+        ("<p> ile <br> farkı?", "<p> yeni paragraf (boşluklu, kapanışlı); <br> aynı paragrafta alt satır (kapanışsız)."),
+        ("HTML yorum satırı?", "<!-- açıklama --> (tarayıcıda görünmez)."),
+        ("color ile background-color farkı?", "color metin rengini, background-color arka plan rengini değiştirir."),
+        ("#FF0000 ve rgb(0, 0, 255)?", "Kırmızı ve mavi."),
+        ("<ol type=\"I\"> nasıl numaralandırır?", "Büyük Roma rakamlarıyla: I, II, III."),
+        ("<img>'de alt niteliği?", "Alternatif metin: resim yüklenmezse görünür, ekran okuyucular okur."),
+        ("src=\"../fil.gif\" ne demek?", "Resim, HTML dosyasının bir üst klasöründe."),
+        ("<th> ile <td> farkı?", "<th> başlık hücresi (kalın, ortalı); <td> veri hücresi."),
+        ("colspan ve rowspan?", "Hücreyi birden çok sütuna / birden çok satıra yayar."),
+        ("target=\"_blank\"?", "Bağlantıyı yeni sekmede açar (varsayılan _self)."),
+        ("Sayfa içi bağlantı nasıl yapılır?", "Hedefe id verilir, link href=\"#id\"."),
+        ("placeholder ile value farkı?", "placeholder sadece ipucu; value gerçek başlangıç değeri."),
+        ("Radio butonlarında tek seçim şartı?", "Aynı gruptakilerin name değeri aynı olmalı."),
+        ("GET ile POST farkı?", "GET veriyi URL sorgusuna ekler; POST HTTP isteğinin gövdesinde gönderir."),
     ],
 }
 
@@ -502,4 +740,129 @@ QUESTIONS = [
     {"week": "bt-h4", "q": "Modern Wi‑Fi ve Bluetooth'un temelini atan frekans atlamalı yayılı spektrum (FHSS) tekniğinin patentini 1942'de alan kişi kimdir?",
      "options": ["Guglielmo Marconi", "Heinrich Hertz", "Hedy Lamarr", "Nikola Tesla"], "answer": 2,
      "explain": "Hedy Lamarr 1942'de FHSS patentini aldı. Marconi 1901'de Atlantik ötesine telsiz telgraf gönderdi."},
+    {"week": "bt-h5", "q": "HTML için aşağıdakilerden hangisi doğrudur?",
+     "options": ["Bir programlama dilidir", "HyperText Markup Language'in kısaltmasıdır ve bir işaretleme dilidir",
+                 "Sadece .exe uzantısıyla kaydedilir", "Yalnızca sunucuda çalışır"], "answer": 1,
+     "explain": "HTML (Hiper Metin İşaretleme Dili) içeriğin yapısını belirten işaretleme dilidir; programlama dili değildir. Uzantı .html veya .htm."},
+    {"week": "bt-h5", "q": "Alan adlarını (www.meb.gov.tr gibi) ilgili IP adresleriyle eşleştiren sistem hangisidir?",
+     "options": ["HTTP", "DNS", "Hosting", "HTML"], "answer": 1,
+     "explain": "DNS (Domain Name System). Tarayıcı DNS ile IP'yi öğrenir, sunucuya bağlanır, sayfayı gösterir."},
+    {"week": "bt-h5", "q": "Bir web sitesinin dosyalarının internetten erişilebilir olması için bir sunucuda saklanmasını sağlayan hizmet hangisidir?",
+     "options": ["Alan adı", "DNS", "Hosting", "Tarayıcı"], "answer": 2,
+     "explain": "Hosting (barındırma). Alan adı sitenin adresi, hosting ise dosyaların saklandığı yerdir (mağaza adresi ↔ mağazanın kendisi)."},
+    {"week": "bt-h5", "q": "Aşağıdakilerden hangisi geçerli bir IPv4 adresidir?",
+     "options": ["192.168.123.254", "192.168.300.1", "192.168.1", "256.10.10.10"], "answer": 0,
+     "explain": "IPv4: noktalarla ayrılmış dört sayı ve her sayı 0–255 arası. 300 ve 256 aralık dışında; üç sayılı adres eksik."},
+    {"week": "bt-h5", "q": "Türkiye'deki üniversitelerin web adreslerinde genellikle hangi uzantı kullanılır?",
+     "options": [".com.tr", ".gov.tr", ".edu.tr", ".org.tr"], "answer": 2,
+     "explain": ".edu eğitim kurumlarıyla ilişkilidir; Türkiye'de .edu.tr (örn. eskisehir.edu.tr). .gov.tr devlet kurumları içindir."},
+    {"week": "bt-h5", "q": ".jp ve .ch ülke kodu uzantıları sırasıyla hangi ülkeleri temsil eder?",
+     "options": ["Japonya – Çin", "Japonya – İsviçre", "Jamaika – Şili", "Japonya – Çekya"], "answer": 1,
+     "explain": "Slayttaki ülke kodları: .tr Türkiye, .uk Birleşik Krallık, .jp Japonya, .it İtalya, .ch İsviçre."},
+    {"week": "bt-h5", "q": "Tarayıcıda F12 (İncele) ile bir sayfanın HTML'inde yapılan değişiklik için hangisi doğrudur?",
+     "options": ["Sitenin sunucudaki dosyalarını kalıcı olarak değiştirir", "Tüm ziyaretçiler değişikliği görür",
+                 "Sadece kendi tarayıcımızda görünür ve sayfa yenilenince genellikle kaybolur", "Sayfa kaynağını siler"], "answer": 2,
+     "explain": "İncele aracındaki değişiklikler geçicidir; web sitesinin gerçek dosyaları değişmez. Ctrl + U ise sayfa kaynağını gösterir."},
+    {"week": "bt-h5", "q": "`<!DOCTYPE html>` ifadesi için hangisi doğrudur?",
+     "options": ["`<body>` içinde yazılır", "Bir HTML etiketidir ve `</DOCTYPE>` ile kapatılır",
+                 "Belgenin en başında yer alır, HTML5 olduğunu bildirir; etiket değildir ve kapanışı yoktur", "Sayfa başlığını belirler"], "answer": 2,
+     "explain": "Belge türü bildirimi tarayıcıya HTML5 standardını bildirir. Sekme başlığını `<title>` belirler."},
+    {"week": "bt-h5", "q": "Tarayıcı sekmesinde görünen sayfa başlığı hangi etiketle belirlenir ve nerede yazılır?",
+     "options": ["`<h1>` — `<body>` içinde", "`<title>` — `<head>` içinde", "`<head>` — `<html>` dışında", "`<meta>` — `<body>` içinde"], "answer": 1,
+     "explain": "`<title>` `<head>` içindedir ve sekmede görünür; `<h1>` ise sayfa içeriğindeki ana başlıktır."},
+    {"week": "bt-h5", "q": "Türkçe karakterlerin doğru görüntülenmesine yardımcı olan ifade hangisidir?",
+     "options": ["`<html lang=\"tr\">`", "`<meta charset=\"UTF-8\">`", "`<title>Türkçe</title>`", "`<!DOCTYPE html>`"], "answer": 1,
+     "explain": "`<meta charset=\"UTF-8\">` karakter kodlamasını belirtir. `lang=\"tr\"` sayfanın dilinin Türkçe olduğunu bildirir."},
+    {"week": "bt-h5", "q": "Aşağıdaki etiketlerden hangisinin kapanış etiketi YOKTUR?",
+     "options": ["`<p>`", "`<h1>`", "`<br>`", "`<title>`"], "answer": 2,
+     "explain": "`<br>` (satır atlama), `<img>` (resim) ve `<hr>` (yatay çizgi) kapanışsızdır."},
+    {"week": "bt-h5", "q": "HTML başlık etiketleri için hangisi doğrudur?",
+     "options": ["`<h6>` en büyük başlıktır", "`<h1>`–`<h6>` arasında altı seviye vardır; `<h1>` en üst düzey ve varsayılan olarak en büyüktür",
+                 "Başlık etiketleri yalnızca yazı boyutunu değiştirir", "`<h7>` en alt düzey başlıktır"], "answer": 1,
+     "explain": "Başlıklar ayrıca önem sırası/hiyerarşi belirtir; arama motorları ve ekran okuyucular için önemlidir."},
+    {"week": "bt-h5", "q": "`<p>` ve `<br>` için hangisi YANLIŞTIR?",
+     "options": ["`<p>` yeni paragraf oluşturur", "`<br>` aynı paragrafta alt satıra geçirir", "`<br>` ek paragraf boşluğu oluşturur", "`<br>` etiketinin kapanışı yoktur"], "answer": 2,
+     "explain": "Paragraflar arasında varsayılan boşluk vardır; `<br>` ek paragraf boşluğu oluşturmaz."},
+    {"week": "bt-h5", "q": "HTML'de tarayıcıda görüntülenmeyen yorum satırı nasıl yazılır?",
+     "options": ["`// yorum`", "`/* yorum */`", "`<!-- yorum -->`", "`# yorum`"], "answer": 2,
+     "explain": "Yorumlar `<!--` ile başlar `-->` ile biter; kodu geçici devre dışı bırakmak için de kullanılabilir."},
+    {"week": "bt-h5", "q": "HTML nitelikleri (attributes) için hangisi doğrudur?",
+     "options": ["Kapanış etiketinin içine yazılır", "Her zaman açılış etiketinin içinde, genellikle nitelik=\"değer\" biçiminde yazılır",
+                 "Bir etikette yalnızca bir nitelik kullanılabilir", "Hiçbir nitelik değersiz kullanılamaz"], "answer": 1,
+     "explain": "Birden fazla nitelik kullanılabilir; required, disabled gibi bazıları değersiz yazılabilir."},
+    {"week": "bt-h5", "q": "Günümüzde bir yazının boyutunu değiştirmek için önerilen yöntem hangisidir?",
+     "options": ["`<font size=\"5\">`", "`style=\"font-size: 24px;\"`", "`<big>` etiketi", "`size=\"24\"` niteliği"], "answer": 1,
+     "explain": "`<font>` etiketi geçerliliğini yitirmiştir; boyut CSS'in font-size özelliğiyle verilir."},
+    {"week": "bt-h5", "q": "Bir paragrafın sadece arka plan rengini değiştirmek için hangi CSS özelliği kullanılır?",
+     "options": ["color", "background-color", "font-family", "text-align"], "answer": 1,
+     "explain": "color metnin rengini, background-color öğenin arka plan rengini değiştirir; body'de kullanılırsa tüm sayfanın arka planı değişir."},
+    {"week": "bt-h5", "q": "HEX renk kodu #00FF00 hangi rengi temsil eder?",
+     "options": ["Kırmızı", "Yeşil", "Mavi", "Siyah"], "answer": 1,
+     "explain": "#RRGGBB: ilk iki karakter kırmızı, sonraki iki yeşil, son iki mavi. #FF0000 kırmızı, #0000FF mavi."},
+    {"week": "bt-h5", "q": "`color: #A41A1B;` ile aynı rengi veren RGB değeri hangisidir?",
+     "options": ["rgb(164, 26, 27)", "rgb(26, 164, 27)", "rgb(41, 26, 27)", "rgb(255, 26, 27)"], "answer": 0,
+     "explain": "A4₁₆ = 164, 1A₁₆ = 26, 1B₁₆ = 27. Slayt iki kodun aynı rengi verdiğini gösterir."},
+    {"week": "bt-h5", "q": "Metni hem sol hem sağ kenara hizalamak için kullanılan text-align değeri hangisidir?",
+     "options": ["center", "left", "justify", "right"], "answer": 2,
+     "explain": "justify kelime boşluklarını ayarlayarak iki yana yaslar; etkisi çok satırlı metinlerde görülür."},
+    {"week": "bt-h5", "q": "Boşlukları ve satır sonlarını olduğu gibi koruyan HTML etiketi hangisidir?",
+     "options": ["`<mark>`", "`<pre>`", "`<abbr>`", "`<em>`"], "answer": 1,
+     "explain": "`<pre>` biçimi korur. `<mark>` vurgulama, `<abbr>` kısaltma açıklaması, `<em>` italik vurgu."},
+    {"week": "bt-h5", "q": "H₂O yazımında 2'yi alt simge yapmak için hangi etiket kullanılır?",
+     "options": ["`<sup>`", "`<sub>`", "`<s>`", "`<ins>`"], "answer": 1,
+     "explain": "`<sub>` alt simge, `<sup>` üst simge (8²), `<s>` üstü çizili, `<ins>` altı çizili eklenen metin."},
+    {"week": "bt-h5", "q": "Maddeleri büyük Roma rakamlarıyla (I, II, III) numaralandıran sıralı liste hangisidir?",
+     "options": ["`<ol type=\"i\">`", "`<ol type=\"I\">`", "`<ul type=\"I\">`", "`<ol start=\"I\">`"], "answer": 1,
+     "explain": "type: \"1\" sayı, \"A\" büyük harf, \"a\" küçük harf, \"I\" büyük Roma, \"i\" küçük Roma. start başlangıç numarasını verir."},
+    {"week": "bt-h5", "q": "`<ol start=\"3\">` ile başlayan bir listenin ikinci maddesinin numarası kaçtır?",
+     "options": ["2", "3", "4", "5"], "answer": 2,
+     "explain": "Liste 3'ten başlar: ilk madde 3, ikinci madde 4."},
+    {"week": "bt-h5", "q": "`<img>` etiketindeki alt niteliğinin temel görevi nedir?",
+     "options": ["Fare üzerine gelince ipucu göstermek", "Resmin genişliğini ayarlamak",
+                 "Resim yüklenemezse görünen ve ekran okuyucuların kullandığı alternatif metni belirtmek", "Resmi sağa yaslamak"], "answer": 2,
+     "explain": "Fareyle üzerine gelince ipucu title niteliğinin işidir. Boyut width/height, konum CSS float ile ayarlanır."},
+    {"week": "bt-h5", "q": "`<img src=\"../fil.gif\">` yazımında resim nerededir?",
+     "options": ["HTML dosyasıyla aynı klasörde", "fil adlı alt klasörde", "HTML dosyasının bir üst klasöründe", "İnternette"], "answer": 2,
+     "explain": "../ bir üst klasöre çıkar. Aynı klasör \"fil.gif\", alt klasör \"yemekler/kurufasulye.jpg\"."},
+    {"week": "bt-h5", "q": "HTML tablolarında başlık hücresi oluşturan ve genellikle kalın, ortalı görüntülenen etiket hangisidir?",
+     "options": ["`<td>`", "`<tr>`", "`<th>`", "`<thead>`"], "answer": 2,
+     "explain": "`<th>` başlık hücresi, `<td>` veri hücresi, `<tr>` satır, `<thead>` başlık bölümünü gruplandırır."},
+    {"week": "bt-h5", "q": "Bir tablo hücresinin iki sütunu kaplaması için hangi nitelik kullanılır?",
+     "options": ["`rowspan=\"2\"`", "`colspan=\"2\"`", "`border=\"2\"`", "`cellspacing=\"2\"`"], "answer": 1,
+     "explain": "colspan sütunları, rowspan satırları birleştirir (örn. `<td rowspan=\"3\">FEN BİLİMLERİ</td>`)."},
+    {"week": "bt-h5", "q": "Tabloda komşu hücrelerin kenarlıklarının birleşmesini sağlayan CSS özelliği hangisidir?",
+     "options": ["padding", "border-spacing", "border-collapse", "background-image"], "answer": 2,
+     "explain": "padding hücre içi boşluk, border-spacing ayrı kenarlıklı hücreler arası boşluk, border-collapse kenarlıkları birleştirir."},
+    {"week": "bt-h5", "q": "Ders programı uygulamasında (başlık satırı + Pazartesi–Cuma, Gün / Ders Adı / Saat) tablo kaç satır ve kaç sütundan oluşur?",
+     "options": ["5 satır, 3 sütun", "6 satır, 3 sütun", "3 satır, 6 sütun", "6 satır, 2 sütun"], "answer": 1,
+     "explain": "1 başlık satırı (`<th>`) + 5 gün = 6 satır; Gün, Ders Adı, Saat = 3 sütun."},
+    {"week": "bt-h5", "q": "Bir bağlantının yeni sekmede açılması için hangi nitelik kullanılır?",
+     "options": ["`target=\"_self\"`", "`target=\"_blank\"`", "`href=\"_new\"`", "`open=\"tab\"`"], "answer": 1,
+     "explain": "_blank genellikle yeni sekmede açar; _self (varsayılan) mevcut sekmede açar."},
+    {"week": "bt-h5", "q": "Sayfadaki `<h2 id=\"iletisim\">` başlığına giden sayfa içi bağlantı nasıl yazılır?",
+     "options": ["`<a href=\"iletisim\">`", "`<a href=\"#iletisim\">`", "`<a id=\"#iletisim\">`", "`<a target=\"iletisim\">`"], "answer": 1,
+     "explain": "href içindeki # işaretinden sonraki ifade hedef öğenin id değeriyle aynı olmalıdır."},
+    {"week": "bt-h5", "q": "`<a>` etiketindeki href kısaltmasının açılımı nedir?",
+     "options": ["Hyper Reference Format", "Hypertext Reference", "HTMLRef", "Home Reference"], "answer": 1,
+     "explain": "href (Hypertext Reference) bağlantının hedef adresini belirtir; a = anchor."},
+    {"week": "bt-h5", "q": "Form alanında girilen karakterleri gizleyen input türü hangisidir?",
+     "options": ["`type=\"text\"`", "`type=\"email\"`", "`type=\"password\"`", "`type=\"hidden\"`"], "answer": 2,
+     "explain": "password karakterleri gizler; text tek satır metin, email e-posta adresi içindir."},
+    {"week": "bt-h5", "q": "Form alanında placeholder ile value arasındaki fark nedir?",
+     "options": ["İkisi de aynıdır", "placeholder sadece yol gösterici ipucudur; value alana gerçek başlangıç değeri verir",
+                 "value alanı zorunlu yapar", "placeholder karakter sayısını sınırlar"], "answer": 1,
+     "explain": "placeholder kullanıcının girdiği değer değildir. Zorunluluk required, sınır maxlength ile sağlanır."},
+    {"week": "bt-h5", "q": "Bir grup radio butonundan yalnızca birinin seçilebilmesi için ne gerekir?",
+     "options": ["Her birinin id'si aynı olmalı", "Gruptaki tüm radio butonlarının name değeri aynı olmalı",
+                 "value değerleri boş olmalı", "required yazılmalı"], "answer": 1,
+     "explain": "Aynı name'e sahip radio'lar bir grup oluşturur ve tek seçime izin verir. checkbox ise birden çok seçime izin verir."},
+    {"week": "bt-h5", "q": "Form verilerini URL'nin sorgu bölümüne ekleyerek gönderen yöntem hangisidir?",
+     "options": ["POST", "GET", "PUT", "action"], "answer": 1,
+     "explain": "GET verileri URL'ye ekler (arama işlemleri); POST HTTP isteğinin gövdesinde gönderir (kayıt işlemleri). action ise gönderim adresidir."},
+    {"week": "bt-h5", "q": "Öğrenci kayıt formunda kullanıcının kendini tanıtacağı çok satırlı metin alanı hangi etiketle oluşturulur?",
+     "options": ["`<input type=\"text\">`", "`<textarea>`", "`<select>`", "`<label>`"], "answer": 1,
+     "explain": "`<textarea rows=\"4\" cols=\"30\">`: rows görünür satır sayısı, cols yaklaşık karakter genişliği."},
+    {"week": "bt-h5", "q": "HTML ile hazırlanan bir formdaki verilerin kaydedilmesi için ne gerekir?",
+     "options": ["Sadece `<form>` etiketi yeterlidir", "Sunucu tarafında çalışan bir sistem gerekir", "CSS kullanmak gerekir", "Dosyayı .htm olarak kaydetmek gerekir"], "answer": 1,
+     "explain": "HTML formun görünümünü ve alanlarını oluşturur; verilerin işlenmesi/kaydedilmesi sunucu tarafında yapılır."},
 ]
